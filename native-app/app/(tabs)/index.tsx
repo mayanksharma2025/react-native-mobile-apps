@@ -24,8 +24,8 @@ class App extends Component {
   }
   render() {
     return (
-      <View style={styles.screen}>
-        <ScrollView>
+      <ScrollView style={styles.screen}>
+        <View>
           {/* use of ScrollView Component */}
           {this.state.items.map((item, index) => (
             <View key={item.id}>
@@ -37,8 +37,8 @@ class App extends Component {
               </View>
             </View>
           ))}
-        </ScrollView>
-      </View>
+        </View>
+      </ScrollView>
     )
   }
 }
