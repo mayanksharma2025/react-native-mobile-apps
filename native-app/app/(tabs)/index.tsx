@@ -1,43 +1,51 @@
-import { Text } from '@rneui/themed'
-import { FlatList, StyleSheet, View } from 'react-native'
-import { Icon } from 'react-native-elements'
+import * as React from 'react'
 
-const data = [
-  { id: '1', title: 'Item One' },
-  { id: '2', title: 'Item Two' },
-  { id: '3', title: 'Item Three' },
-]
+// Importing components from react-native library.
+import { Alert, Button, Text, View } from 'react-native'
 
-const App = () => {
+export default function App() {
+  function onPressButton() {
+    Alert.alert('Welcome Mayank')
+  }
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={data}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={{ display: 'contents' }}>
-            <Text style={styles.item}>{item.title}</Text>
-            <Icon name="ios-eye" type="ionicon" color="#C2185B" />
-          </View>
-        )}
-      />
-      <Text>Hello</Text>
-    </View>
+    // Using react-natives built in components.
+    <>
+      <View
+        style={{
+          flex: 0.2,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#FC6C85',
+        }}
+      >
+        <Text
+          style={{
+            color: 'white',
+            fontSize: 42,
+          }}
+        >
+          Mayank Sharma
+        </Text>
+      </View>
+      <Button onPress={onPressButton} title="Press Me" color="#FC6C85" />
+      <View
+        style={{
+          marginTop: 4,
+          flex: 0.1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#FC6C85',
+        }}
+      >
+        <Text
+          style={{
+            color: 'white',
+            fontSize: 42,
+          }}
+        >
+          Nisha Sharma
+        </Text>
+      </View>
+    </>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 0.4,
-    paddingTop: 50,
-    paddingHorizontal: 16,
-  },
-  item: {
-    fontSize: 18,
-    padding: 10,
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
-  },
-})
-
-export default App
