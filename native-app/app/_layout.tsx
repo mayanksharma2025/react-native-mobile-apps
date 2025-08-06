@@ -1,33 +1,40 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from '@react-navigation/native'
-import { useFonts } from 'expo-font'
-import { Stack } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
-import 'react-native-reanimated'
+import * as React from 'react'
+import { Text, View } from 'react-native'
+import { NavigationContainer } from '@react-navigation/native'
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 
-import { useColorScheme } from '@/hooks/useColorScheme'
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme()
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  })
-
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null
-  }
-
+function Home() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Home!</Text>
+    </View>
+  )
+}
+
+function Setting() {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Settings!</Text>
+    </View>
+  )
+}
+
+function Notification() {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Notifications!</Text>
+    </View>
+  )
+}
+
+const Tab = createBottomTabNavigator()
+
+export default function App() {
+  return (
+    <Tab.Navigator initialRouteName={'Home'}>
+      <Tab.Screen name="Home" component={Home} />
+      <Tab.Screen name="Notifications" component={Notification} />
+      <Tab.Screen name="Settings" component={Setting} />
+    </Tab.Navigator>
   )
 }
