@@ -1,48 +1,33 @@
-import * as React from 'react'
-import { Text, View } from 'react-native'
-import { createDrawerNavigator } from '@react-navigation/drawer'
-import { NavigationContainer } from '@react-navigation/native'
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from '@react-navigation/native'
+import { useFonts } from 'expo-font'
+import { Stack } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import 'react-native-reanimated'
 
-// home screen
-function HomeScreen() {
+import { useColorScheme } from '@/hooks/useColorScheme'
+
+export default function RootLayout() {
+  const colorScheme = useColorScheme()
+  const [loaded] = useFonts({
+    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  })
+
+  if (!loaded) {
+    // Async font loading only occurs in development.
+    return null
+  }
+
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Home page</Text>
-    </View>
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <StatusBar style="auto" />
+    </ThemeProvider>
   )
 }
-
-// notifications screen
-function NotificationsScreen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Notifications Page</Text>
-    </View>
-  )
-}
-
-// about screen
-function AboutScreen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>About Page</Text>
-    </View>
-  )
-}
-
-// create a drawer navigator
-const Drawer = createDrawerNavigator()
-
-// create the app
-function App() {
-  return (
-    <Drawer.Navigator initialRouteName="Home">
-      <Drawer.Screen name="Home" component={HomeScreen} />
-      <Drawer.Screen name="Notifications" component={NotificationsScreen} />
-      <Drawer.Screen name="About" component={AboutScreen} />
-    </Drawer.Navigator>
-  )
-}
-
-// export the app
-export default App
