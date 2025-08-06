@@ -1,76 +1,46 @@
-// Import necessary libraries
+// Import necessary modules from React and React Native
 import React, { useState } from 'react'
-// Import components from React Native
+// Import StyleSheet, Text, View, and Button components from React Native
 import { StyleSheet, Text, View, Button } from 'react-native'
-// Import AsyncStorage for local storage
-import AsyncStorage from '@react-native-async-storage/async-storage'
 
-// Main App component
-const App: React.FC = () => {
-  // State to store retrieved data
-  const [data, setdata] = useState('')
+// Define the main App component as the default export
+export default function App() {
+  // Declare a state variable 'count' with an initial value of 0 and a function 'setcount' to update it
+  const [count, setcount] = useState(0)
 
-  // Function to add data to AsyncStorage
-  const add = async () => {
-    try {
-      // Store key-value pair in AsyncStorage
-      await AsyncStorage.setItem(
-        'data',
-        `Mayank ${Math.floor(Math.random() * 50)}`
-      )
-    } catch (e) {
-      // Log any errors
-      console.error(e)
-    }
+  // Function to increment the count value by 1
+  const changeCountPlus = () => {
+    setcount(count + 1)
+  }
+  const changeCountMinus = () => {
+    setcount(count - 1)
   }
 
-  // Function to retrieve data from AsyncStorage
-  const get = async () => {
-    try {
-      // Retrieve value by key
-      const value = await AsyncStorage.getItem('data')
-      if (value !== null) {
-        // Update state with retrieved value
-        setdata(value)
-      }
-    } catch (e) {
-      // Log any errors
-      console.error(e)
-    }
-  }
-
+  // Render the UI
   return (
     <View style={styles.container}>
-      {/* Display retrieved data */}
-      <Text style={styles.text}>{data}</Text>
-      {/* Button to add data */}
-      <View style={styles.button}>
-        <Button title={'add'} onPress={add} />
-      </View>
-      {/* Button to get data */}
-      <View style={styles.button}>
-        <Button title={'get'} onPress={get} />
-      </View>
+      {/* Display the current count value */}
+      <Text style={styles.text}>{count}</Text>
+      {/* Button to trigger the changeCount function when pressed */}
+      <Button title={'Add Count'} onPress={changeCountPlus} />
+      <Button title={'Remove Count'} color="red" onPress={changeCountMinus} />
     </View>
   )
 }
 
-// Styles for the components
+// Define styles for the components
 const styles = StyleSheet.create({
+  // Style for the main container
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flex: 1, // Take up the full height of the screen
+    backgroundColor: '#fff', // Set background color to white
+    alignItems: 'center', // Center items horizontally
+    justifyContent: 'center', // Center items vertically
+    gap: 10,
   },
+  // Style for the text displaying the count
   text: {
-    fontSize: 40,
-    marginBottom: 30,
-  },
-  button: {
-    margin: 20,
-    width: 250,
+    fontSize: 40, // Set font size to 40
+    marginBottom: 30, // Add margin below the text
   },
 })
-
-export default App
