@@ -1,43 +1,96 @@
-// import required libraries
-import React from 'react'
-// import TouchableHighlight and other components from react-native
-import { StyleSheet, Text, View, TouchableHighlight, Alert } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import {
+  Text,
+  View,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native'
+import { Icon } from 'react-native-elements'
 
-// create a main functional component
-export default function App() {
+const App: React.FC = () => {
+  const [data, setData] = useState<string[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    setTimeout(() => {
+      setData([
+        'Data Structures',
+        'STL',
+        'C++',
+        'Java',
+        'Python',
+        'ReactJS',
+        'Angular',
+        'NodeJs',
+        'PHP',
+        'MongoDb',
+        'MySql',
+        'Android',
+        'iOS',
+        'Hadoop',
+        'Ajax',
+        'Ruby',
+        'Rails',
+        '.Net',
+        'Perl',
+      ])
+      setLoading(false)
+    }, 3000)
+  }, [])
+
+  const renderItem = ({ item }: { item: string }) => (
+    <View style={styles.row}>
+      <Text style={styles.rowText}>{item}</Text>
+      <Icon name="eye" type="ionicon" color="#C2185B" />
+    </View>
+  )
+
+  const keyExtractor = (_: string, index: number) => index.toString()
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="lightgreen" />
+        <Text style={styles.text}>Loading...</Text>
+      </View>
+    )
+  }
+
   return (
-    <View style={styles.container}>
-      <TouchableHighlight
-        onPress={() => {
-          Alert.alert('Touchable Highlight pressed.')
-        }}
-        style={styles.touchable}
-        activeOpacity={0.5}
-        underlayColor="#67c904"
-      >
-        <Text style={styles.text}>Click Me!</Text>
-      </TouchableHighlight>
+    <View style={styles.screen}>
+      <FlatList
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+      />
     </View>
   )
 }
 
-// create styles for the components
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
-  },
-  touchable: {
-    height: 50,
-    width: 200,
-    borderRadius: 10,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#4287f5',
   },
   text: {
-    color: '#fff',
+    marginTop: 10,
+    fontSize: 16,
+  },
+  screen: {
+    marginTop: 30,
+  },
+  row: {
+    margin: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 2,
+  },
+  rowText: {
+    fontSize: 18,
   },
 })
+
+export default App
