@@ -1,126 +1,119 @@
-import React, { useState, useRef } from 'react'
+import React from 'react' // Import React library
 import {
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  SafeAreaView,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native'
-import Ionicons from 'react-native-vector-icons/Ionicons'
+  View, // Import View component for layout
+  Text, // Import Text component for displaying text
+  TouchableOpacity, // Import TouchableOpacity for button functionality
+  StyleSheet, // Import StyleSheet for styling components
+  Image, // Import Image component for displaying images
+} from 'react-native' // Import React Native components
+import Animated, { // Import Animated from react-native-reanimated to create animations
+  useSharedValue, // Hook to create shared values for animations
+  withTiming, // Function to create a timing animation
+  Easing, // Easing function for smooth animations
+  useAnimatedStyle, // Hook to create animated styles
+} from 'react-native-reanimated' // Import animation utilities from react-native-reanimated
 
-// Type for each item in the list
-type DataItem = {
-  id: string
-  title: string
-}
+// Define the main App component
+const App = () => {
+  // Shared value to control the opacity of the image
+  const fadeInOpacity = useSharedValue(0)
 
-// Sample data
-const DATA: DataItem[] = [
-  { id: '1', title: 'Data Structures' },
-  { id: '2', title: 'STL' },
-  { id: '3', title: 'C++' },
-  { id: '4', title: 'Java' },
-  { id: '5', title: 'Python' },
-  { id: '6', title: 'CP' },
-  { id: '7', title: 'ReactJs' },
-  { id: '8', title: 'NodeJs' },
-  { id: '9', title: 'MongoDb' },
-  { id: '10', title: 'ExpressJs' },
-  { id: '11', title: 'PHP' },
-  { id: '12', title: 'MySql' },
-]
-
-// Render a single list item
-const Item = ({ title }: { title: string }) => (
-  <View style={styles.item}>
-    <Text style={styles.itemText}>{title}</Text>
-  </View>
-)
-
-const Search: React.FC = () => {
-  const [data, setData] = useState<DataItem[]>(DATA)
-  const [searchValue, setSearchValue] = useState<string>('')
-  const arrayholder = useRef<DataItem[]>(DATA)
-
-  const handleSearch = (text: string): void => {
-    const formattedQuery = text.toUpperCase()
-    const filteredData = arrayholder.current.filter((item) =>
-      item.title.toUpperCase().includes(formattedQuery)
-    )
-    setData(filteredData)
-    setSearchValue(text)
+  // Function to animate the fade-in effect
+  const fadeIn = () => {
+    fadeInOpacity.value = withTiming(1, {
+      duration: 1000, // Animation duration in milliseconds
+      easing: Easing.linear, // Linear easing for smooth animation
+    })
   }
 
-  const clearSearch = () => {
-    setSearchValue('')
-    setData(arrayholder.current)
+  // Function to animate the fade-out effect
+  const fadeOut = () => {
+    fadeInOpacity.value = withTiming(0, {
+      duration: 1000, // Animation duration in milliseconds
+      easing: Easing.linear, // Linear easing for smooth animation
+    })
   }
 
+  // Animated style to bind the opacity value to the image container
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: fadeInOpacity.value, // Use the shared value for opacity
+    }
+  })
+
+  // URL of the image to display
+  const imageUrl =
+    'https://img-s-msn-com.akamaized.net/tenant/amp/entityid/AA1JZHht.img?w=768&h=432&m=6'
+
+  // Render the UI
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Custom Search Bar */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#555" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Search Here..."
-          value={searchValue}
-          onChangeText={handleSearch}
-          placeholderTextColor="#aaa"
+    <View style={styles.container}>
+      {/* Animated container for the image */}
+      <Animated.View
+        style={[
+          styles.imageContainer, // Static styles
+          animatedStyle, // Animated styles
+        ]}
+      >
+        {/* Display the image */}
+        <Image
+          source={{ uri: imageUrl }} // Load image from the URL
+          style={styles.image} // Apply styles to the image
         />
-        {searchValue.length > 0 && (
-          <TouchableOpacity onPress={clearSearch}>
-            <Ionicons name="close-circle" size={20} color="#555" />
-          </TouchableOpacity>
-        )}
-      </View>
+      </Animated.View>
 
-      {/* List */}
-      <FlatList
-        data={data}
-        renderItem={({ item }) => <Item title={item.title} />}
-        keyExtractor={(item) => item.id}
-      />
-    </SafeAreaView>
+      {/* Button to trigger the fade-in animation */}
+      <TouchableOpacity
+        onPress={fadeIn} // Call fadeIn function on press
+        style={styles.button} // Apply button styles
+      >
+        <Text style={styles.buttonText}>Fade In</Text>
+      </TouchableOpacity>
+
+      {/* Button to trigger the fade-out animation */}
+      <TouchableOpacity
+        onPress={fadeOut} // Call fadeOut function on press
+        style={styles.button} // Apply button styles
+      >
+        <Text style={styles.buttonText}>Fade Out</Text>
+      </TouchableOpacity>
+    </View>
   )
 }
 
+export default App
+
+// Define styles for the components
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    marginTop: 30,
-    padding: 10,
+    flex: 1, // Take up the full screen
+    alignItems: 'center', // Center items horizontally
+    justifyContent: 'center', // Center items vertically
+    backgroundColor: '#f0f0f0', // Light gray background color
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#eee',
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    marginBottom: 10,
+  imageContainer: {
+    alignItems: 'center', // Center the image horizontally
   },
-  icon: {
-    marginRight: 5,
+  image: {
+    width: 200, // Image width
+    height: 200, // Image height
+    borderRadius: 10, // Rounded corners for the image
   },
-  input: {
-    flex: 1,
-    height: 40,
-    fontSize: 16,
-    color: '#000',
+  button: {
+    marginTop: 20, // Space above the button
+    backgroundColor: 'blue', // Button background color
+    paddingVertical: 10, // Vertical padding inside the button
+    paddingHorizontal: 20, // Horizontal padding inside the button
+    borderRadius: 5, // Rounded corners for the button
+    shadowColor: 'black', // Shadow color
+    shadowOffset: { width: 0, height: 2 }, // Shadow offset
+    shadowOpacity: 0.4, // Shadow opacity
+    shadowRadius: 4, // Shadow blur radius
+    elevation: 4, // Elevation for Android shadow
   },
-  item: {
-    backgroundColor: 'green',
-    padding: 20,
-    marginVertical: 8,
-    marginHorizontal: 16,
-    borderRadius: 8,
-  },
-  itemText: {
-    color: 'white',
-    fontSize: 18,
+  buttonText: {
+    color: 'white', // Text color
+    fontWeight: 'bold', // Bold text
+    fontSize: 16, // Font size
   },
 })
-
-export default Search
