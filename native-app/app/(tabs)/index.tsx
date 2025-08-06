@@ -1,37 +1,43 @@
+// import required libraries
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+// import TouchableHighlight and other components from react-native
+import { StyleSheet, Text, View, TouchableHighlight, Alert } from 'react-native'
 
-// Creating a functional component
-const MS = () => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Mayank Sharma</Text>
-    </View>
-  )
-}
-
-// Creating a stylesheet
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#FC6C85',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 25,
-    backgroundColor: 'white',
-    margin: 10,
-    borderRadius: 5,
-  },
-})
-
-// Creating the main App component
+// create a main functional component
 export default function App() {
   return (
-    // Using the MS component multiple times
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <MS />
-      <MS />
-      <MS />
+    <View style={styles.container}>
+      <TouchableHighlight
+        onPress={() => {
+          Alert.alert('Touchable Highlight pressed.')
+        }}
+        style={styles.touchable}
+        activeOpacity={0.5}
+        underlayColor="#67c904"
+      >
+        <Text style={styles.text}>Click Me!</Text>
+      </TouchableHighlight>
     </View>
   )
 }
+
+// create styles for the components
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  touchable: {
+    height: 50,
+    width: 200,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#4287f5',
+  },
+  text: {
+    color: '#fff',
+  },
+})
