@@ -1,23 +1,37 @@
 import React from 'react'
-import { View, StyleSheet, Text, ActivityIndicator } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 
-function App() {
+// Creating a functional component
+const MS = () => {
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="lightgreen" />
-      <Text style={styles.text}>Loading...</Text>
+      <Text style={styles.text}>Mayank Sharma</Text>
     </View>
   )
 }
 
+// Creating a stylesheet
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#FC6C85',
     alignItems: 'center',
   },
   text: {
-    marginTop: 10,
+    fontSize: 25,
+    backgroundColor: 'white',
+    margin: 10,
+    borderRadius: 5,
   },
 })
-export default App
+
+// Creating the main App component
+export default function App() {
+  return (
+    // Using the MS component multiple times
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <MS />
+      <MS />
+      <MS />
+    </View>
+  )
+}
