@@ -1,95 +1,75 @@
-import React, { useEffect, useState } from 'react'
-import {
-  Text,
-  View,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator,
-} from 'react-native'
-import { Icon } from 'react-native-elements'
+// Import necessary libraries
+import React, { useState } from 'react'
+// Import components from React Native
+import { StyleSheet, Text, View, Button } from 'react-native'
+// Import AsyncStorage for local storage
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
+// Main App component
 const App: React.FC = () => {
-  const [data, setData] = useState<string[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
+  // State to store retrieved data
+  const [data, setdata] = useState('')
 
-  useEffect(() => {
-    setTimeout(() => {
-      setData([
-        'Data Structures',
-        'STL',
-        'C++',
-        'Java',
-        'Python',
-        'ReactJS',
-        'Angular',
-        'NodeJs',
-        'PHP',
-        'MongoDb',
-        'MySql',
-        'Android',
-        'iOS',
-        'Hadoop',
-        'Ajax',
-        'Ruby',
-        'Rails',
-        '.Net',
-        'Perl',
-      ])
-      setLoading(false)
-    }, 3000)
-  }, [])
+  // Function to add data to AsyncStorage
+  const add = async () => {
+    try {
+      // Store key-value pair in AsyncStorage
+      await AsyncStorage.setItem(
+        'data',
+        `Mayank ${Math.floor(Math.random() * 50)}`
+      )
+    } catch (e) {
+      // Log any errors
+      console.error(e)
+    }
+  }
 
-  const renderItem = ({ item }: { item: string }) => (
-    <View style={styles.row}>
-      <Text style={styles.rowText}>{item}</Text>
-      <Icon name="eye" type="ionicon" color="#C2185B" />
-    </View>
-  )
-
-  const keyExtractor = (_: string, index: number) => index.toString()
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="lightgreen" />
-        <Text style={styles.text}>Loading...</Text>
-      </View>
-    )
+  // Function to retrieve data from AsyncStorage
+  const get = async () => {
+    try {
+      // Retrieve value by key
+      const value = await AsyncStorage.getItem('data')
+      if (value !== null) {
+        // Update state with retrieved value
+        setdata(value)
+      }
+    } catch (e) {
+      // Log any errors
+      console.error(e)
+    }
   }
 
   return (
-    <View style={styles.screen}>
-      <FlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-      />
+    <View style={styles.container}>
+      {/* Display retrieved data */}
+      <Text style={styles.text}>{data}</Text>
+      {/* Button to add data */}
+      <View style={styles.button}>
+        <Button title={'add'} onPress={add} />
+      </View>
+      {/* Button to get data */}
+      <View style={styles.button}>
+        <Button title={'get'} onPress={get} />
+      </View>
     </View>
   )
 }
 
+// Styles for the components
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#fff',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   text: {
-    marginTop: 10,
-    fontSize: 16,
+    fontSize: 40,
+    marginBottom: 30,
   },
-  screen: {
-    marginTop: 30,
-  },
-  row: {
-    margin: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 2,
-  },
-  rowText: {
-    fontSize: 18,
+  button: {
+    margin: 20,
+    width: 250,
   },
 })
 
