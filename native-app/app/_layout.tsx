@@ -1,40 +1,30 @@
-import * as React from 'react'
-import { Text, View } from 'react-native'
-import { NavigationContainer } from '@react-navigation/native'
+import React from 'react'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-
-function Home() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Home!</Text>
-    </View>
-  )
-}
-
-function Setting() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Settings!</Text>
-    </View>
-  )
-}
-
-function Notification() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Notifications!</Text>
-    </View>
-  )
-}
+import { Button, Text } from 'react-native'
 
 const Tab = createBottomTabNavigator()
 
-export default function App() {
-  return (
-    <Tab.Navigator initialRouteName={'Home'}>
-      <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Notifications" component={Notification} />
-      <Tab.Screen name="Settings" component={Setting} />
-    </Tab.Navigator>
-  )
-}
+const HomeScreen = ({ navigation }: any) => (
+  <Button
+    title="Go to Jane's profile"
+    onPress={() => navigation.navigate('Profile', { name: 'Jane' })}
+  />
+)
+
+const ProfileScreen = ({ route }: any) => (
+  <Text>This is {route.params?.name}'s profile</Text>
+)
+
+const App = () => (
+  <Tab.Navigator>
+    <Tab.Screen
+      name="Home"
+      component={HomeScreen}
+      options={{ title: 'Welcome' }}
+    />
+    <Tab.Screen name="Profile" component={ProfileScreen} />
+  </Tab.Navigator>
+)
+
+export default App
