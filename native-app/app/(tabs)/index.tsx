@@ -1,88 +1,126 @@
-import React from 'react'
-import { StyleSheet, View } from 'react-native'
-import { DataTable } from 'react-native-paper'
+import React, { useState, useRef } from 'react'
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  SafeAreaView,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native'
+import Ionicons from 'react-native-vector-icons/Ionicons'
 
-const TableExample = () => {
-  return (
-    <DataTable style={styles.container}>
-      <DataTable.Header style={styles.tableHeader}>
-        <DataTable.Title>Name</DataTable.Title>
-        <DataTable.Title>Favourite Food</DataTable.Title>
-        <DataTable.Title>Age</DataTable.Title>
-      </DataTable.Header>
-      <DataTable.Row>
-        <DataTable.Cell>Radhika</DataTable.Cell>
-        <DataTable.Cell>Dosa</DataTable.Cell>
-        <DataTable.Cell>23</DataTable.Cell>
-      </DataTable.Row>
-
-      <DataTable.Row>
-        <DataTable.Cell>Krishna</DataTable.Cell>
-        <DataTable.Cell>Uttapam</DataTable.Cell>
-        <DataTable.Cell>26</DataTable.Cell>
-      </DataTable.Row>
-      <DataTable.Row>
-        <DataTable.Cell>Vanshika</DataTable.Cell>
-        <DataTable.Cell>Brownie</DataTable.Cell>
-        <DataTable.Cell>20</DataTable.Cell>
-      </DataTable.Row>
-      <DataTable.Row>
-        <DataTable.Cell>Teena</DataTable.Cell>
-        <DataTable.Cell>Pizza</DataTable.Cell>
-        <DataTable.Cell>24</DataTable.Cell>
-      </DataTable.Row>
-      <DataTable.Row>
-        <DataTable.Cell>Krishna</DataTable.Cell>
-        <DataTable.Cell>Uttapam</DataTable.Cell>
-        <DataTable.Cell>26</DataTable.Cell>
-      </DataTable.Row>
-      <DataTable.Row>
-        <DataTable.Cell>Vanshika</DataTable.Cell>
-        <DataTable.Cell>Brownie</DataTable.Cell>
-        <DataTable.Cell>20</DataTable.Cell>
-      </DataTable.Row>
-      <DataTable.Row>
-        <DataTable.Cell>Teena</DataTable.Cell>
-        <DataTable.Cell>Pizza</DataTable.Cell>
-        <DataTable.Cell>24</DataTable.Cell>
-      </DataTable.Row>
-      <DataTable.Row>
-        <DataTable.Cell>Krishna</DataTable.Cell>
-        <DataTable.Cell>Uttapam</DataTable.Cell>
-        <DataTable.Cell>26</DataTable.Cell>
-      </DataTable.Row>
-      <DataTable.Row>
-        <DataTable.Cell>Vanshika</DataTable.Cell>
-        <DataTable.Cell>Brownie</DataTable.Cell>
-        <DataTable.Cell>20</DataTable.Cell>
-      </DataTable.Row>
-      <DataTable.Row>
-        <DataTable.Cell>Teena</DataTable.Cell>
-        <DataTable.Cell>Pizza</DataTable.Cell>
-        <DataTable.Cell>24</DataTable.Cell>
-      </DataTable.Row>
-    </DataTable>
-  )
+// Type for each item in the list
+type DataItem = {
+  id: string
+  title: string
 }
 
-const App: React.FC = () => {
+// Sample data
+const DATA: DataItem[] = [
+  { id: '1', title: 'Data Structures' },
+  { id: '2', title: 'STL' },
+  { id: '3', title: 'C++' },
+  { id: '4', title: 'Java' },
+  { id: '5', title: 'Python' },
+  { id: '6', title: 'CP' },
+  { id: '7', title: 'ReactJs' },
+  { id: '8', title: 'NodeJs' },
+  { id: '9', title: 'MongoDb' },
+  { id: '10', title: 'ExpressJs' },
+  { id: '11', title: 'PHP' },
+  { id: '12', title: 'MySql' },
+]
+
+// Render a single list item
+const Item = ({ title }: { title: string }) => (
+  <View style={styles.item}>
+    <Text style={styles.itemText}>{title}</Text>
+  </View>
+)
+
+const Search: React.FC = () => {
+  const [data, setData] = useState<DataItem[]>(DATA)
+  const [searchValue, setSearchValue] = useState<string>('')
+  const arrayholder = useRef<DataItem[]>(DATA)
+
+  const handleSearch = (text: string): void => {
+    const formattedQuery = text.toUpperCase()
+    const filteredData = arrayholder.current.filter((item) =>
+      item.title.toUpperCase().includes(formattedQuery)
+    )
+    setData(filteredData)
+    setSearchValue(text)
+  }
+
+  const clearSearch = () => {
+    setSearchValue('')
+    setData(arrayholder.current)
+  }
+
   return (
-    <View style={styles.section}>
-      <TableExample />
-    </View>
+    <SafeAreaView style={styles.container}>
+      {/* Custom Search Bar */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="#555" style={styles.icon} />
+        <TextInput
+          style={styles.input}
+          placeholder="Search Here..."
+          value={searchValue}
+          onChangeText={handleSearch}
+          placeholderTextColor="#aaa"
+        />
+        {searchValue.length > 0 && (
+          <TouchableOpacity onPress={clearSearch}>
+            <Ionicons name="close-circle" size={20} color="#555" />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* List */}
+      <FlatList
+        data={data}
+        renderItem={({ item }) => <Item title={item.title} />}
+        keyExtractor={(item) => item.id}
+      />
+    </SafeAreaView>
   )
 }
-
-export default App
 
 const styles = StyleSheet.create({
-  section: {
-    marginTop: 25,
-  },
   container: {
-    padding: 15,
+    flex: 1,
+    marginTop: 30,
+    padding: 10,
   },
-  tableHeader: {
-    backgroundColor: '#DCDCDC',
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eee',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  icon: {
+    marginRight: 5,
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    fontSize: 16,
+    color: '#000',
+  },
+  item: {
+    backgroundColor: 'green',
+    padding: 20,
+    marginVertical: 8,
+    marginHorizontal: 16,
+    borderRadius: 8,
+  },
+  itemText: {
+    color: 'white',
+    fontSize: 18,
   },
 })
+
+export default Search
