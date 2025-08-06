@@ -1,30 +1,48 @@
-import React from 'react'
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { Button, Text } from 'react-native'
+import * as React from 'react'
+import { Text, View } from 'react-native'
+import { createDrawerNavigator } from '@react-navigation/drawer'
+import { NavigationContainer } from '@react-navigation/native'
 
-const Tab = createBottomTabNavigator()
+// home screen
+function HomeScreen() {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Home page</Text>
+    </View>
+  )
+}
 
-const HomeScreen = ({ navigation }: any) => (
-  <Button
-    title="Go to Jane's profile"
-    onPress={() => navigation.navigate('Profile', { name: 'Jane' })}
-  />
-)
+// notifications screen
+function NotificationsScreen() {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>Notifications Page</Text>
+    </View>
+  )
+}
 
-const ProfileScreen = ({ route }: any) => (
-  <Text>This is {route.params?.name}'s profile</Text>
-)
+// about screen
+function AboutScreen() {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text>About Page</Text>
+    </View>
+  )
+}
 
-const App = () => (
-  <Tab.Navigator>
-    <Tab.Screen
-      name="Home"
-      component={HomeScreen}
-      options={{ title: 'Welcome' }}
-    />
-    <Tab.Screen name="Profile" component={ProfileScreen} />
-  </Tab.Navigator>
-)
+// create a drawer navigator
+const Drawer = createDrawerNavigator()
 
+// create the app
+function App() {
+  return (
+    <Drawer.Navigator initialRouteName="Home">
+      <Drawer.Screen name="Home" component={HomeScreen} />
+      <Drawer.Screen name="Notifications" component={NotificationsScreen} />
+      <Drawer.Screen name="About" component={AboutScreen} />
+    </Drawer.Navigator>
+  )
+}
+
+// export the app
 export default App
