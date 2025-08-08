@@ -1,3 +1,4 @@
+// Import necessary hooks and components from React and React Native
 import { useState, useEffect } from 'react'
 import {
   View,
@@ -8,8 +9,12 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native'
+
+// Import navigation-related components
 import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
+
+// Import UI components from react-native-paper
 import {
   FAB,
   Card,
@@ -18,23 +23,30 @@ import {
   Provider as PaperProvider,
   Appbar,
 } from 'react-native-paper'
+
+// Import SearchBar and Icon components
 import { SearchBar } from 'react-native-elements'
 import Icon from 'react-native-vector-icons/MaterialIcons'
+
+// Import animation utilities from react-native-reanimated
 import Animated, {
   useAnimatedStyle,
   withSpring,
   useSharedValue,
 } from 'react-native-reanimated'
+
 import { StyleSheet } from 'react-native'
 
-// Home screen
+// Home screen to manage employee list
 const HomeScreen = ({ navigation }) => {
-  const [employees, setEmployees] = useState([])
-  const [search, setSearch] = useState('')
-  const [filteredEmployees, setFilteredEmployees] = useState([])
-  const [sortOrder, setSortOrder] = useState('asc')
-  const fabScale = useSharedValue(1)
+  // State variables
+  const [employees, setEmployees] = useState([]) // Store all employees
+  const [search, setSearch] = useState('') // Current search text
+  const [filteredEmployees, setFilteredEmployees] = useState([]) // Filtered employees based on search
+  const [sortOrder, setSortOrder] = useState('asc') // Sorting order
+  const fabScale = useSharedValue(1) // Shared value for FAB animation
 
+  // useEffect to set default employees only once when component mounts
   useEffect(() => {
     const defaultEmployees = [
       {
@@ -49,6 +61,7 @@ const HomeScreen = ({ navigation }) => {
     setEmployees(defaultEmployees)
   }, [])
 
+  // Filter employees whenever search or employees change
   useEffect(() => {
     const filtered = employees.filter((employee) =>
       employee.name.toLowerCase().includes(search.toLowerCase())
@@ -56,6 +69,7 @@ const HomeScreen = ({ navigation }) => {
     setFilteredEmployees(filtered)
   }, [search, employees])
 
+  // Toggle sort order and sort employee list
   const handleSort = () => {
     const newOrder = sortOrder === 'asc' ? 'desc' : 'asc'
     setSortOrder(newOrder)
@@ -67,11 +81,13 @@ const HomeScreen = ({ navigation }) => {
     setEmployees(sortedEmployees)
   }
 
+  // Delete an employee by ID
   const deleteEmployee = (id) => {
     const updatedEmployees = employees.filter((employee) => employee.id !== id)
     setEmployees(updatedEmployees)
   }
 
+  // Edit an existing employee
   const editEmployee = (id, updatedEmployee) => {
     const updatedEmployees = employees.map((employee) =>
       employee.id === id ? updatedEmployee : employee
@@ -79,40 +95,58 @@ const HomeScreen = ({ navigation }) => {
     setEmployees(updatedEmployees)
   }
 
+  // Add a new employee after checking for duplicate empId
   const addEmployee = (newEmployee) => {
     if (employees.some((employee) => employee.empId === newEmployee.empId)) {
       Alert.alert('Error', 'Employee with the same ID already exists.')
     } else {
       setEmployees([...employees, newEmployee])
-      navigation.goBack()
+      if (navigation.canGoBack()) navigation.goBack()
+      else navigation.navigate('Home')
     }
   }
 
+  // Animated style for the FAB
   const fabStyle = useAnimatedStyle(() => {
     return { transform: [{ scale: withSpring(fabScale.value) }] }
   })
 
   return (
     <View style={styles.container}>
+      {/* Header Title */}
       <View style={styles.titleContainer}>
-        <Icon name="people" size={24} color="green" style={styles.titleIcon} />
+        <Icon name="people" size={24} color="white" style={styles.titleIcon} />
         <Text style={styles.title}>GeeksforGeeks Emp Management</Text>
       </View>
 
+      {/* Search bar and Sort button */}
       <Appbar.Header style={styles.appbar}>
-        <SearchBar
-          placeholder="Search Employees..."
-          onChangeText={(text) => setSearch(text)}
-          value={search}
-          containerStyle={styles.searchBarContainer}
-          inputContainerStyle={styles.searchBarInputContainer}
-        />
+        <View style={styles.searchContainer}>
+          <TextInput
+            placeholder="Search Employees..."
+            value={search}
+            onChangeText={setSearch}
+            style={styles.searchInput}
+            placeholderTextColor="#666"
+          />
+          {search.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setSearch('')}
+              style={styles.clearIcon}
+            >
+              <Icon name="close" size={20} color="#666" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Sort Button */}
         <Appbar.Action
           icon={() => <Icon name="filter-alt" size={24} color="white" />}
           onPress={handleSort}
         />
       </Appbar.Header>
 
+      {/* Conditional UI: No records or FlatList */}
       {(filteredEmployees.length === 0 && search !== '') ||
       (employees.length === 0 && filteredEmployees.length === 0) ? (
         <View style={styles.noRecordsContainer}>
@@ -130,6 +164,7 @@ const HomeScreen = ({ navigation }) => {
                 <Paragraph>Position: {item.position}</Paragraph>
               </Card.Content>
               <Card.Actions>
+                {/* Edit button */}
                 <TouchableOpacity
                   onPress={() =>
                     navigation.navigate('Edit', {
@@ -147,6 +182,7 @@ const HomeScreen = ({ navigation }) => {
                   />
                 </TouchableOpacity>
 
+                {/* Delete button */}
                 <TouchableOpacity onPress={() => deleteEmployee(item.id)}>
                   <Icon
                     name="delete"
@@ -162,21 +198,26 @@ const HomeScreen = ({ navigation }) => {
         />
       )}
 
+      {/* Floating Action Button for Add */}
+
       <Animated.View style={[styles.fab, fabStyle]}>
         <FAB
-          style={styles.fab}
+          style={[styles.fab, fabStyle]}
           icon={() => <Icon name="add" size={24} color="white" />}
           onPress={() => {
             fabScale.value = 0.8
             navigation.navigate('Add', { addEmployee, employees })
           }}
+          // onStateChange={({ nativeEvent }) => {
+          //   if (nativeEvent.state === 2) fabScale.value = 1
+          // }}
         />
       </Animated.View>
     </View>
   )
 }
 
-// Add Employee Screen
+// Screen to add a new employee
 const AddEmpScreen = ({ route, navigation }) => {
   const [name, setName] = useState('')
   const [position, setPosition] = useState('')
@@ -187,7 +228,6 @@ const AddEmpScreen = ({ route, navigation }) => {
       Alert.alert('Error', 'Please fill in all the fields.')
       return
     }
-
     const existingEmployees = route.params.employees || []
     if (existingEmployees.some((employee) => employee.empId === empId)) {
       Alert.alert('Error', 'Employee with the same ID already exists.')
@@ -198,6 +238,8 @@ const AddEmpScreen = ({ route, navigation }) => {
         name,
         position,
       })
+      if (navigation.canGoBack()) navigation.goBack()
+      else navigation.navigate('Home')
     }
   }
 
@@ -226,7 +268,7 @@ const AddEmpScreen = ({ route, navigation }) => {
   )
 }
 
-// Edit Employee Screen
+// Screen to edit existing employee details
 const EditEmpScreen = ({ route, navigation }) => {
   const { employee, editEmployee } = route.params
   const [empId, setEmpId] = useState(employee.empId)
@@ -238,7 +280,6 @@ const EditEmpScreen = ({ route, navigation }) => {
       Alert.alert('Error', 'Please fill in all the fields.')
       return
     }
-
     const existingEmployees = route.params.employees || []
     if (
       existingEmployees.some(
@@ -248,7 +289,8 @@ const EditEmpScreen = ({ route, navigation }) => {
       Alert.alert('Error', 'Employee with the same ID already exists.')
     } else {
       editEmployee(employee.id, { ...employee, empId, name, position })
-      navigation.goBack()
+      if (navigation.canGoBack()) navigation.goBack()
+      else navigation.navigate('Home')
     }
   }
 
@@ -277,8 +319,10 @@ const EditEmpScreen = ({ route, navigation }) => {
   )
 }
 
+// Stack navigator setup
 const Stack = createStackNavigator()
 
+// Root App component with navigation container and stack screens
 const App = () => {
   return (
     <PaperProvider>
@@ -328,6 +372,25 @@ export const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 5,
   },
+
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ecf0f1',
+    borderRadius: 5,
+    marginVertical: 8,
+    marginHorizontal: 10,
+    paddingHorizontal: 10,
+    height: 40,
+    width: '80%',
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+  },
+  clearIcon: {
+    marginLeft: 5,
+  },
   employeeList: {
     flex: 1,
     marginTop: 10,
@@ -347,6 +410,7 @@ export const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: 'green',
+    color: 'green',
     borderRadius: 15,
   },
   searchBarContainer: {
