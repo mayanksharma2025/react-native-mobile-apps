@@ -1,266 +1,368 @@
-// App.js
-import React, { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
-  ActivityIndicator,
-  FlatList,
-  Linking,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
+  Text,
+  TextInput,
+  Button,
+  FlatList,
+  TouchableOpacity,
+  Alert,
 } from 'react-native'
-import { Card, Icon, Overlay } from 'react-native-elements'
-import RNPickerSelect from 'react-native-picker-select'
+import { NavigationContainer } from '@react-navigation/native'
+import { createStackNavigator } from '@react-navigation/stack'
+import {
+  FAB,
+  Card,
+  Title,
+  Paragraph,
+  Provider as PaperProvider,
+  Appbar,
+} from 'react-native-paper'
+import { SearchBar } from 'react-native-elements'
+import Icon from 'react-native-vector-icons/MaterialIcons'
+import Animated, {
+  useAnimatedStyle,
+  withSpring,
+  useSharedValue,
+} from 'react-native-reanimated'
+import { StyleSheet } from 'react-native'
 
-const App = () => {
-  const [news, setNews] = useState([])
-  const [selectedNews, setSelectedNews] = useState(null)
-  const [modalVisible, setModalVisible] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState('general')
-  const [refreshing, setRefreshing] = useState(false)
-  const [loading, setLoading] = useState(true)
+// Home screen
+const HomeScreen = ({ navigation }) => {
+  const [employees, setEmployees] = useState([])
+  const [search, setSearch] = useState('')
+  const [filteredEmployees, setFilteredEmployees] = useState([])
+  const [sortOrder, setSortOrder] = useState('asc')
+  const fabScale = useSharedValue(1)
 
   useEffect(() => {
-    fetchNews()
-  }, [selectedCategory])
+    const defaultEmployees = [
+      {
+        id: '1',
+        empId: 'EMP001',
+        name: 'Ramesh',
+        position: 'Software Engineer',
+      },
+      { id: '2', empId: 'EMP002', name: 'Suresh', position: 'Product Manager' },
+      { id: '3', empId: 'EMP003', name: 'Naresh', position: 'UI/UX Designer' },
+    ]
+    setEmployees(defaultEmployees)
+  }, [])
 
-  const fetchNews = async () => {
-    try {
-      setLoading(true)
-      const response = await fetch(
-        `https://newsapi.org/v2/top-headlines?country=us&category=${selectedCategory}&apiKey=4be2b948f8264319acc73f2ebbb3dd53`
-      )
-      const result = await response.json()
-      setNews(
-        result.articles.map((article) => ({
-          ...article,
-          category: selectedCategory,
-        }))
-      )
-    } catch (error) {
-      console.error('Error fetching news:', error.message)
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    const filtered = employees.filter((employee) =>
+      employee.name.toLowerCase().includes(search.toLowerCase())
+    )
+    setFilteredEmployees(filtered)
+  }, [search, employees])
+
+  const handleSort = () => {
+    const newOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+    setSortOrder(newOrder)
+    const sortedEmployees = [...employees].sort((a, b) => {
+      return newOrder === 'asc'
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name)
+    })
+    setEmployees(sortedEmployees)
+  }
+
+  const deleteEmployee = (id) => {
+    const updatedEmployees = employees.filter((employee) => employee.id !== id)
+    setEmployees(updatedEmployees)
+  }
+
+  const editEmployee = (id, updatedEmployee) => {
+    const updatedEmployees = employees.map((employee) =>
+      employee.id === id ? updatedEmployee : employee
+    )
+    setEmployees(updatedEmployees)
+  }
+
+  const addEmployee = (newEmployee) => {
+    if (employees.some((employee) => employee.empId === newEmployee.empId)) {
+      Alert.alert('Error', 'Employee with the same ID already exists.')
+    } else {
+      setEmployees([...employees, newEmployee])
+      navigation.goBack()
     }
   }
 
-  const onRefresh = async () => {
-    setRefreshing(true)
-    await fetchNews()
-    setRefreshing(false)
-  }
-
-  const openNewsLink = () => {
-    if (selectedNews?.url) {
-      Linking.openURL(selectedNews.url)
-    }
-  }
-
-  const renderItem = ({ item }) => (
-    <View style={styles.cardContainer}>
-      <Card.Title style={styles.cardTitle}>{item.title}</Card.Title>
-      <Card.Image source={{ uri: item.urlToImage }} style={styles.cardImage} />
-      <Text style={styles.description}>{item.description}</Text>
-      <View style={styles.cardFooter}>
-        <View style={styles.categoryContainer}>
-          <Icon name="tag" type="font-awesome" color="gray" size={16} />
-          <Text style={styles.categoryLabel}>{item.category}</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.readMoreButton}
-          onPress={() => {
-            setSelectedNews(item)
-            setModalVisible(true)
-          }}
-        >
-          <Text style={styles.readMoreButtonText}>Read more</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  )
+  const fabStyle = useAnimatedStyle(() => {
+    return { transform: [{ scale: withSpring(fabScale.value) }] }
+  })
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Icon name="newspaper-o" type="font-awesome" color="green" size={30} />
-        <Text style={styles.header}>GeeksforGeeks News Reader</Text>
+      <View style={styles.titleContainer}>
+        <Icon name="people" size={24} color="green" style={styles.titleIcon} />
+        <Text style={styles.title}>GeeksforGeeks Emp Management</Text>
       </View>
 
-      <View style={styles.categoryPickerContainer}>
-        <Text style={styles.categoryPickerLabel}>Select Category:</Text>
-        <RNPickerSelect
-          placeholder={{}}
-          onValueChange={(itemValue) => setSelectedCategory(itemValue)}
-          value={selectedCategory}
-          items={[
-            { label: 'General', value: 'general' },
-            { label: 'Business', value: 'business' },
-            { label: 'Technology', value: 'technology' },
-            { label: 'Sports', value: 'sports' },
-          ]}
-          style={pickerSelectStyles}
+      <Appbar.Header style={styles.appbar}>
+        <SearchBar
+          placeholder="Search Employees..."
+          onChangeText={(text) => setSearch(text)}
+          value={search}
+          containerStyle={styles.searchBarContainer}
+          inputContainerStyle={styles.searchBarInputContainer}
         />
-      </View>
+        <Appbar.Action
+          icon={() => <Icon name="filter-alt" size={24} color="white" />}
+          onPress={handleSort}
+        />
+      </Appbar.Header>
 
-      {loading ? (
-        <ActivityIndicator
-          size="large"
-          color="#3498db"
-          style={{ marginTop: 20 }}
-        />
+      {(filteredEmployees.length === 0 && search !== '') ||
+      (employees.length === 0 && filteredEmployees.length === 0) ? (
+        <View style={styles.noRecordsContainer}>
+          <Text>No records found</Text>
+        </View>
       ) : (
         <FlatList
-          data={news}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.url}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          data={filteredEmployees}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <Card style={styles.card}>
+              <Card.Content>
+                <Title>{item.name}</Title>
+                <Paragraph>ID: {item.empId}</Paragraph>
+                <Paragraph>Position: {item.position}</Paragraph>
+              </Card.Content>
+              <Card.Actions>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('Edit', {
+                      employee: item,
+                      editEmployee,
+                      employees,
+                    })
+                  }
+                >
+                  <Icon
+                    name="edit"
+                    size={24}
+                    color="#3498db"
+                    style={styles.actionIcon}
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => deleteEmployee(item.id)}>
+                  <Icon
+                    name="delete"
+                    size={24}
+                    color="#3498db"
+                    style={styles.actionIcon}
+                  />
+                </TouchableOpacity>
+              </Card.Actions>
+            </Card>
+          )}
+          style={styles.employeeList}
         />
       )}
 
-      {/* ✅ Only Overlay, not Modal */}
-      <Overlay
-        isVisible={modalVisible}
-        overlayStyle={styles.modalContainer}
-        onBackdropPress={() => setModalVisible(false)}
-      >
-        {selectedNews && (
-          <View style={styles.cardContainer}>
-            <Card.Title style={styles.cardTitle}>
-              {selectedNews.title}
-            </Card.Title>
-            <Card.Image
-              source={{ uri: selectedNews.urlToImage }}
-              style={styles.cardImage}
-            />
-            <Text style={styles.description}>{selectedNews.content}</Text>
-            <TouchableOpacity
-              style={styles.readMoreButton}
-              onPress={openNewsLink}
-            >
-              <Text style={styles.readMoreButtonText}>Read Full Article</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </Overlay>
+      <Animated.View style={[styles.fab, fabStyle]}>
+        <FAB
+          style={styles.fab}
+          icon={() => <Icon name="add" size={24} color="white" />}
+          onPress={() => {
+            fabScale.value = 0.8
+            navigation.navigate('Add', { addEmployee, employees })
+          }}
+        />
+      </Animated.View>
     </View>
   )
 }
 
-export default App
+// Add Employee Screen
+const AddEmpScreen = ({ route, navigation }) => {
+  const [name, setName] = useState('')
+  const [position, setPosition] = useState('')
+  const [empId, setEmpId] = useState('')
 
-// --- STYLES ---
+  const addEmployee = () => {
+    if (!empId || !name || !position) {
+      Alert.alert('Error', 'Please fill in all the fields.')
+      return
+    }
 
-const styles = StyleSheet.create({
+    const existingEmployees = route.params.employees || []
+    if (existingEmployees.some((employee) => employee.empId === empId)) {
+      Alert.alert('Error', 'Employee with the same ID already exists.')
+    } else {
+      route.params?.addEmployee({
+        id: Date.now().toString(),
+        empId,
+        name,
+        position,
+      })
+    }
+  }
+
+  return (
+    <View style={styles.container}>
+      <TextInput
+        placeholder="Enter Employee ID"
+        value={empId}
+        onChangeText={setEmpId}
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="Enter Name"
+        value={name}
+        onChangeText={setName}
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="Enter Position"
+        value={position}
+        onChangeText={setPosition}
+        style={styles.input}
+      />
+      <Button title="Add Employee" onPress={addEmployee} />
+    </View>
+  )
+}
+
+// Edit Employee Screen
+const EditEmpScreen = ({ route, navigation }) => {
+  const { employee, editEmployee } = route.params
+  const [empId, setEmpId] = useState(employee.empId)
+  const [name, setName] = useState(employee.name)
+  const [position, setPosition] = useState(employee.position)
+
+  const saveChanges = () => {
+    if (!empId || !name || !position) {
+      Alert.alert('Error', 'Please fill in all the fields.')
+      return
+    }
+
+    const existingEmployees = route.params.employees || []
+    if (
+      existingEmployees.some(
+        (emp) => emp.id !== employee.id && emp.empId === empId
+      )
+    ) {
+      Alert.alert('Error', 'Employee with the same ID already exists.')
+    } else {
+      editEmployee(employee.id, { ...employee, empId, name, position })
+      navigation.goBack()
+    }
+  }
+
+  return (
+    <View style={styles.container}>
+      <TextInput
+        placeholder="Enter Employee ID"
+        value={empId}
+        onChangeText={setEmpId}
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="Enter Name"
+        value={name}
+        onChangeText={setName}
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="Enter Position"
+        value={position}
+        onChangeText={setPosition}
+        style={styles.input}
+      />
+      <Button title="Save Changes" onPress={saveChanges} />
+    </View>
+  )
+}
+
+const Stack = createStackNavigator()
+
+const App = () => {
+  return (
+    <PaperProvider>
+      <>
+        <Stack.Navigator initialRouteName="Home">
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Add" component={AddEmpScreen} />
+          <Stack.Screen name="Edit" component={EditEmpScreen} />
+        </Stack.Navigator>
+      </>
+    </PaperProvider>
+  )
+}
+
+export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ecf0f1',
-    padding: 10,
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 10,
   },
-  headerContainer: {
+  titleContainer: {
+    backgroundColor: 'white',
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
-    paddingTop: 50,
+    paddingVertical: 10,
+    paddingLeft: 10,
+    marginBottom: 5,
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginLeft: 10,
-  },
-  categoryPickerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  categoryPickerLabel: {
-    fontSize: 16,
+  titleIcon: {
     marginRight: 10,
+    color: 'green',
   },
-  cardContainer: {
-    borderRadius: 10,
-    marginBottom: 15,
-    padding: 15,
-    backgroundColor: '#fff', // Light card background
-    shadowColor: '#000', // iOS shadow
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4, // Android shadow
-  },
-  cardTitle: {
-    fontSize: 18,
+  title: {
+    color: 'green',
+    fontSize: 20,
     fontWeight: 'bold',
   },
-  cardImage: {
-    height: 200,
-    resizeMode: 'cover',
-    borderRadius: 10,
+  appbar: {
+    backgroundColor: 'green',
   },
-  description: {
-    marginVertical: 10,
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  categoryContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  categoryLabel: {
-    color: 'gray',
-    marginLeft: 5,
-  },
-  readMoreButton: {
-    backgroundColor: '#3498db',
-    padding: 8,
-    borderRadius: 5,
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  readMoreButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  modalContainer: {
-    width: '90%',
-    maxHeight: '90%',
-    borderRadius: 10,
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
     padding: 10,
+    backgroundColor: 'white',
+    borderRadius: 5,
   },
-  modalCard: {
+  employeeList: {
+    flex: 1,
+    marginTop: 10,
+    paddingHorizontal: 10,
+  },
+  card: {
+    marginBottom: 10,
+    elevation: 4,
     borderRadius: 10,
-    overflow: 'hidden',
+  },
+  actionIcon: {
+    marginHorizontal: 10,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'green',
+    borderRadius: 15,
+  },
+  searchBarContainer: {
+    backgroundColor: 'transparent',
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
+    flex: 1,
+  },
+  searchBarInputContainer: {
+    backgroundColor: '#ecf0f1',
+  },
+  noRecordsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 })
 
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 5,
-    color: 'black',
-    paddingRight: 30,
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderWidth: 0.5,
-    borderColor: 'purple',
-    borderRadius: 8,
-    color: 'black',
-    paddingRight: 30,
-  },
-})
+export default App
