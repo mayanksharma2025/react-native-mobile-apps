@@ -1,5 +1,43 @@
 # Welcome to your Expo app 👋
 
+Install & run (expo recommended)
+
+npx expo init rn-crud --template expo-template-blank-typescript
+
+cd rn-crud
+
+Install dependencies:
+
+expo install react-native-paper react-native-vector-icons @react-navigation/native @react-navigation/bottom-tabs @react-navigation/stack react-native-gesture-handler react-native-screens react-native-safe-area-context @react-native-async-storage/async-storage
+npm install @tanstack/react-query axios
+
+Copy project src/ files from this canvas into your project.
+
+Run: expo start
+
+File structure
+
+src/
+App.tsx
+api/
+client.ts
+queries.ts
+navigation/
+index.tsx
+screens/
+UsersList.tsx
+UserForm.tsx
+PostsList.tsx
+PostForm.tsx
+CommentsList.tsx
+CommentForm.tsx
+components/
+SnackbarProvider.tsx
+types/
+index.ts
+
+# if using expo: react-native-vector-icons is included
+
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started
