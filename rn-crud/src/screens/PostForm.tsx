@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, KeyboardAvoidingView, Platform, Text } from 'react-native'
 import { TextInput, Button, HelperText } from 'react-native-paper'
 import {
   useQuery,
@@ -132,9 +132,9 @@ export default function PostForm() {
           mode="contained"
           onPress={onSave}
           style={{ marginTop: 20 }}
-          loading={createMutation?.isLoading || updateMutation?.isLoading}
+          loading={createMutation?.isPending || updateMutation?.isPending}
         >
-          Save
+          <Text> {createMutation.isPending ? 'Saving...' : 'Save'}</Text>
         </Button>
       </View>
     </KeyboardAvoidingView>

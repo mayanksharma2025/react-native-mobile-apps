@@ -1,15 +1,28 @@
 import axios from 'axios';
-import { User, Post, Comment } from '../types';
+import { User, Post, Comment, PaginatedUsers } from '../types';
 
 // const BASE_URL = 'https://jsonplaceholder.typicode.com';
 const BASE_URL = '/api';
 // const BASE_URL = 'http://localhost:3000';
 
 // USERS
-export const fetchUsers = async (): Promise<User[]> => {
-    const { data } = await axios.get(`${BASE_URL}/users`);
-    return data;
-};
+// export const fetchUsers = async (): Promise<User[]> => {
+//     const { data } = await axios.get(`${BASE_URL}/users`);
+//     return data;
+// };
+
+export async function fetchUsers({
+    page = 1,
+    limit = 10,
+    search = ''
+}: { page?: number; limit?: number; search?: string }) {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit), search })
+    const res = await fetch(`/api/users?${params.toString()}`)
+    if (!res.ok) throw new Error('Failed to fetch users')
+    return res.json() // returns { data, page, totalPages }
+}
+
+
 
 export const fetchUser = async (id: number): Promise<User> => {
     const { data } = await axios.get(`${BASE_URL}/users/${id}`);

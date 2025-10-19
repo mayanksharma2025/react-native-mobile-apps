@@ -146,9 +146,9 @@ export default function UserForm() {
           mode="contained"
           onPress={onSave}
           style={{ marginTop: 20 }}
-          loading={createMutation?.isLoading || updateMutation?.isLoading}
+          loading={createMutation?.isPending || updateMutation?.isPending}
         >
-          <Text>Save</Text>
+          <Text> {createMutation.isPending ? 'Saving...' : 'Save'}</Text>
         </Button>
       </View>
     </KeyboardAvoidingView>

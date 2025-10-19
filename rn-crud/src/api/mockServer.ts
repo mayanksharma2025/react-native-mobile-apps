@@ -13,9 +13,14 @@ export function makeServer() {
         },
 
         seeds(server) {
-            server.create('user', { id: "1", name: 'John Doe', username: 'jhondoe', email: 'john@example.com' })
-            server.create('user', { id: "2", name: 'Jane Smith', username: 'janesmith', email: 'jane@example.com' })
-
+            for (let i = 1; i <= 50; i++) {
+                server.create('user', {
+                    id: i.toString(),
+                    name: `User ${i}`,
+                    username: `user${i}`,
+                    email: `user${i}@example.com`,
+                })
+            }
             server.create('post', {
                 "id": "1",
                 "title": "Hello World",
@@ -29,7 +34,36 @@ export function makeServer() {
             this.namespace = '/api'
 
             // Users
-            this.get('/users', (schema: any) => schema.users.all().models.map((u: any) => ({ id: u.id, ...u.attrs })))
+            // this.get('/users', (schema: any) => schema.users.all().models.map((u: any) => ({ id: u.id, ...u.attrs })))
+            this.get('/users', (schema: any, request: any) => {
+                const page = Number(request.queryParams.page || 1)
+                const limit = Number(request.queryParams.limit || 10)
+                const search = (request.queryParams.search || '').toLowerCase()
+
+                let users = schema.users.all().models
+
+                // Filter by search
+                if (search) {
+                    users = users.filter((u: any) =>
+                        u.attrs.name.toLowerCase().includes(search)
+                    )
+                }
+
+                const total = users.length
+                const totalPages = Math.ceil(total / limit)
+                const start = (page - 1) * limit
+                const end = start + limit
+
+                const paginated = users.slice(start, end)
+
+                return {
+                    data: paginated.map((u: any) => ({ id: u.id, ...u.attrs })),
+                    page,
+                    total,
+                    totalPages,
+                }
+            })
+
             this.get('/users/:id', (schema: any, req) => {
                 const user = schema.users.find(req.params.id)
                 return user ? { id: user.id, ...user.attrs } : null

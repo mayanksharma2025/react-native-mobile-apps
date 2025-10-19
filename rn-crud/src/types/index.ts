@@ -19,3 +19,12 @@ export interface Comment {
     email: string;
     body: string;
 }
+
+
+export interface PaginatedUsers {
+    data: User[]
+    page: number
+    total: number
+    totalPages: number
+}
+
