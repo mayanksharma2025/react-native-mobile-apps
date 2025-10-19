@@ -1,0 +1,44 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    {
+      "id": "2",
+      "name": "Jane Smith",
+      "email": "jane@example.com"
+    }
+  ],
+  "posts": [
+    {
+      "id": "1",
+      "title": "Hello World",
+      "body": "This is my first post.",
+      "userId": 1
+    },
+    {
+      "id": "2",
+      "title": "Second Post",
+      "body": "React Native is awesome!",
+      "userId": 2
+    }
+  ],
+  "comments": [
+    {
+      "id": "1",
+      "postId": 1,
+      "name": "Alice",
+      "email": "alice@mail.com",
+      "body": "Great post!"
+    },
+    {
+      "id": "2",
+      "postId": 1,
+      "name": "Bob",
+      "email": "bob@mail.com",
+      "body": "Thanks for sharing!"
+    }
+  ]
+}

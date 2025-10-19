@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { User, Post, Comment } from '../types';
 
-const BASE_URL = 'https://jsonplaceholder.typicode.com';
+// const BASE_URL = 'https://jsonplaceholder.typicode.com';
+const BASE_URL = '/api';
+// const BASE_URL = 'http://localhost:3000';
 
 // USERS
 export const fetchUsers = async (): Promise<User[]> => {
