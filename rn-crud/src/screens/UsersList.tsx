@@ -1,14 +1,12 @@
-// src/screens/UsersList.tsx
-import React, { useMemo, useState } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import {
   FlatList,
   View,
   ActivityIndicator,
   StyleSheet,
-  TextInput as RNTextInput,
+  TextInput,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
 import { List, Button, Text } from 'react-native-paper'
 import {
   useInfiniteQuery,
@@ -16,9 +14,9 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { fetchUsers, deleteUser } from '../api/queries'
-import { User } from '../types'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { PaginatedUsers, User } from '../types'
 import { useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { RootStackParamList } from '../navigation/types'
 import { useSnackbar } from '../components/SnackbarProvider'
 
@@ -27,67 +25,56 @@ type UsersListNavProp = NativeStackNavigationProp<
   'UsersList'
 >
 
-type PaginatedUsers = {
-  data: User[]
-  page: number
-  total: number
-  totalPages: number
-}
-
 export default function UsersList() {
   const navigation = useNavigation<UsersListNavProp>()
   const snackbar = useSnackbar()
   const qc = useQueryClient()
+  const [search, setSearch] = useState('')
 
-  const [search, setSearch] = useState<string>('')
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteQuery<PaginatedUsers, Error>({
+      queryKey: ['users', search],
+      queryFn: ({ pageParam = 0 }) =>
+        fetchUsers({ skip: pageParam, limit: 10, search }),
+      getNextPageParam: (lastPage: any) => {
+        const nextSkip = lastPage.skip + lastPage.limit
+        return nextSkip < lastPage.total ? nextSkip : undefined
+      },
+    } as any)
 
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    fetchNextPage,
-    hasNextPage,
-    refetch,
-  } = useInfiniteQuery({
-    queryKey: ['users', search],
-    queryFn: ({ pageParam = 1 }) =>
-      fetchUsers({ page: pageParam, limit: 10, search }),
-    getNextPageParam: (lastPage) =>
-      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
-    initialPageParam: 1,
-    staleTime: 1000 * 60,
-  })
-
-  const users = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data])
+  const users = useMemo(() => data?.pages.flatMap((p) => p.users) ?? [], [data])
 
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
-    onMutate: async (id: number) => {
-      await qc.cancelQueries({ queryKey: ['users'] })
-      const previous = qc.getQueryData<User[]>(['users'])
-      qc.setQueryData<User[]>(['users'], (old = []) =>
-        old.filter((u) => u.id !== id)
-      )
-      return { previous }
+    onSuccess: () => {
+      qc.invalidateQueries(['users', search] as any)
+      snackbar({ message: 'User deleted', type: 'success' })
     },
-    onError: (_err, _vars, context) => {
-      if (context?.previous)
-        qc.setQueryData<User[]>(['users'], context.previous)
-      snackbar({ message: 'Delete failed', type: 'error' })
-    },
-    onSettled: () => qc.invalidateQueries({ queryKey: ['users'] }),
-    onSuccess: () => snackbar({ message: 'User deleted', type: 'success' }),
+    onError: () => snackbar({ message: 'Delete failed', type: 'error' }),
   })
 
-  const handleRefresh = async () => {
-    await qc.setQueryData(['users', search], undefined) // reset pages
-    refetch({
-      refetchPage: (_page: number, index: number) => index === 0,
-    } as any)
-  }
+  const handleRefresh = useCallback(() => {
+    qc.invalidateQueries(['users', search] as any)
+  }, [qc, search])
 
-  const keyExtractor = (item: User | undefined, index: number) =>
-    (item?.id ?? index).toString()
+  const keyExtractor = (item: User) => item.id.toString()
+
+  const UserItem = React.memo(({ user, onEdit, onDelete }: any) => (
+    <List.Item
+      title={`${user.firstName} ${user.lastName}`}
+      description={user.email}
+      right={() => (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Button compact onPress={() => onEdit(user.id)}>
+            Edit
+          </Button>
+          <Button compact onPress={() => onDelete(user.id)}>
+            Delete
+          </Button>
+        </View>
+      )}
+    />
+  ))
 
   return (
     <SafeAreaView style={styles.container}>
@@ -98,7 +85,7 @@ export default function UsersList() {
         >
           Add User
         </Button>
-        <RNTextInput
+        <TextInput
           style={styles.searchInput}
           placeholder="Search by name..."
           value={search}
@@ -120,7 +107,7 @@ export default function UsersList() {
           data={users}
           keyExtractor={keyExtractor}
           onEndReached={() => {
-            if (hasNextPage) fetchNextPage()
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage()
           }}
           onEndReachedThreshold={0.5}
           refreshing={isLoading || isFetchingNextPage}
@@ -133,27 +120,10 @@ export default function UsersList() {
           renderItem={({ item }) => {
             if (!item) return null
             return (
-              <List.Item
-                title={item.name}
-                description={item.email}
-                right={() => (
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Button
-                      compact
-                      onPress={() =>
-                        navigation.navigate('UserForm', { id: item.id })
-                      }
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      compact
-                      onPress={() => deleteMutation.mutate(item.id)}
-                    >
-                      Delete
-                    </Button>
-                  </View>
-                )}
+              <UserItem
+                user={item}
+                onEdit={(id: number) => navigation.navigate('UserForm', { id })}
+                onDelete={(id: number) => deleteMutation.mutate(id)}
               />
             )
           }}

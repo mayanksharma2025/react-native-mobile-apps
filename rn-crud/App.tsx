@@ -14,15 +14,15 @@ const queryClient = new QueryClient({
 })
 
 export default function App() {
-  useEffect(() => {
-    // MirageJS expects window.fetch; patch it to globalThis
-    if (typeof globalThis.window === 'undefined') {
-      ;(globalThis as any).window = globalThis
-    }
+  // useEffect(() => {
+  //   // MirageJS expects window.fetch; patch it to globalThis
+  //   if (typeof globalThis.window === 'undefined') {
+  //     ;(globalThis as any).window = globalThis
+  //   }
 
-    // Start Mirage server
-    makeServer()
-  }, [])
+  //   // Start Mirage server
+  //   makeServer()
+  // }, [])
 
   return (
     <SafeAreaProvider>

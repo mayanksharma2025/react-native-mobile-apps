@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { User, Post, Comment, PaginatedUsers } from '../types';
+import { User, Post, Comment, PaginatedUsers, FetchUsersParams } from '../types';
 
 // const BASE_URL = 'https://jsonplaceholder.typicode.com';
 const BASE_URL = '/api';
@@ -11,17 +11,38 @@ const BASE_URL = '/api';
 //     return data;
 // };
 
-export async function fetchUsers({
-    page = 1,
-    limit = 10,
-    search = ''
-}: { page?: number; limit?: number; search?: string }) {
-    const params = new URLSearchParams({ page: String(page), limit: String(limit), search })
-    const res = await fetch(`/api/users?${params.toString()}`)
-    if (!res.ok) throw new Error('Failed to fetch users')
-    return res.json() // returns { data, page, totalPages }
-}
+// export async function fetchUsers({
+//     page = 1,
+//     limit = 10,
+//     search = ''
+// }: { page?: number; limit?: number; search?: string }) {
+//     const params = new URLSearchParams({ page: String(page), limit: String(limit), search })
+//     const res = await fetch(`/api/users?${params.toString()}`)
+//     if (!res.ok) throw new Error('Failed to fetch users')
+//     return res.json() // returns { data, page, totalPages }
+// }
 
+
+export const fetchUsers = async ({
+    limit = 10,
+    skip = 0,
+    search = '',
+}: FetchUsersParams): Promise<PaginatedUsers> => {
+    const baseUrl = search
+        ? 'https://dummyjson.com/users/search'
+        : 'https://dummyjson.com/users'
+
+    const searchQuery = search ? `&q=${encodeURIComponent(search)}` : ''
+    const url = `${baseUrl}?limit=${limit}&skip=${skip}${searchQuery}`
+
+    const res = await fetch(url)
+    if (!res.ok) {
+        throw new Error(`Failed to fetch users: ${res.statusText}`)
+    }
+
+    const data: PaginatedUsers = await res.json()
+    return data
+}
 
 
 export const fetchUser = async (id: number): Promise<User> => {

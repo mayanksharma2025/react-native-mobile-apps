@@ -19,12 +19,16 @@ export interface Comment {
     email: string;
     body: string;
 }
-
+export type FetchUsersParams = {
+    limit?: number
+    skip?: number
+    search?: string
+}
 
 export interface PaginatedUsers {
-    data: User[]
-    page: number
+    users: User[]
     total: number
-    totalPages: number
+    skip: number
+    limit: number
 }
 
