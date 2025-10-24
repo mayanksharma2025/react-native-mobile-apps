@@ -20,6 +20,7 @@
     "@react-navigation/stack": "^7.4.5",
     "@rneui/base": "github:react-native-elements/react-native-elements#base",
     "@rneui/themed": "github:react-native-elements/react-native-elements#themed",
+    "axios": "^1.12.2",
     "expo": "~53.0.20",
     "expo-av": "^15.1.7",
     "expo-blur": "~14.1.5",
