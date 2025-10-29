@@ -58,4 +58,80 @@ export const typeDefs = gql`
     deleteTask(id: ID!): Boolean!
     adminDeleteTask(id: ID!): Boolean!
   }
+
+
+   type Project {
+  id: ID!
+  name: String!
+  description: String
+  members: [User!]
+  tasks: [Task!]
+  createdBy: User!
+  createdAt: String
+}
+
+ type Comment {
+  id: ID!
+  task: Task!
+  author: User!
+  content: String!
+  createdAt: String
+}
+
+ type Notification {
+  id: ID!
+  user: User!
+  message: String!
+  read: Boolean!
+  type: String!
+  createdAt: String
+}
+
+ type Activity {
+  id: ID!
+  action: String!
+  user: User!
+  entityType: String!
+  entityId: ID!
+  details: String
+  createdAt: String
+}
+
+ type Query {
+  projects(limit: Int, offset: Int): [Project!]
+  comments(taskId: ID!): [Comment!]
+  notifications: [Notification!]
+  activities(limit: Int): [Activity!]
+}
+
+ type Mutation {
+  createProject(name: String!, description: String): Project!
+  addTaskToProject(projectId: ID!, taskId: ID!): Project!
+  addMemberToProject(projectId: ID!, userId: ID!): Project!
+
+  addComment(taskId: ID!, content: String!): Comment!
+  markNotificationRead(id: ID!): Notification!
+}
+
+ type Query {
+  getProject(id: ID!): Project
+  getComment(id: ID!): Comment
+  getNotification(id: ID!): Notification
+  getActivity(id: ID!): Activity
+}
+
+ type Mutation {
+  updateProject(id: ID!, name: String, description: String): Project!
+  deleteProject(id: ID!): Boolean!
+
+  updateComment(id: ID!, content: String!): Comment!
+  deleteComment(id: ID!): Boolean!
+
+  deleteNotification(id: ID!): Boolean!
+  deleteActivity(id: ID!): Boolean!
+}
+
 `;
+
+
+

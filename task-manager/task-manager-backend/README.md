@@ -1,254 +1,170 @@
-backend/
-┣ src/
-┃ ┣ config/
-┃ ┃ ┗ db.ts
-┃ ┣ models/
-┃ ┃ ┣ User.ts
-┃ ┃ ┗ Task.ts
-┃ ┣ graphql/
-┃ ┃ ┣ typeDefs.ts
-┃ ┃ ┗ resolvers.ts
-┃ ┣ middleware/
-┃ ┃ ┗ auth.ts
-┃ ┣ utils/
-┃ ┃ ┗ generateToken.ts
-┃ ┣ index.ts
-┗ tsconfig.json
-┗ package.json
+src/
+┣ models/
+┃ ┣ Project.ts
+┃ ┣ Comment.ts
+┃ ┣ Notification.ts
+┃ ┗ Activity.ts
+┣ graphql/
+┃ ┗ typeDefs.ts (updated)
+┃ ┗ resolvers.ts (updated)
 
-⚙️ tsconfig.json
-
-{
-"compilerOptions": {
-"target": "ES2020",
-"module": "CommonJS",
-"outDir": "dist",
-"rootDir": "src",
-"strict": true,
-"esModuleInterop": true,
-"skipLibCheck": true,
-"resolveJsonModule": true
-}
-}
-
-Run your backend:
-
-npm run dev
-
-Then open:
-
-http://localhost:4000/graphql
-
-✅ Auth Header
-
-After logging in or registering, you’ll get a token (JWT).
-Use it in headers for authenticated queries:
-
-{
-"Authorization": "Bearer YOUR_TOKEN_HERE"
-}
-
-👤 1. Register a User
-mutation {
-register(name: "Alice", email: "alice@example.com", password: "password123") {
-token
-user {
-id
-name
-email
-role
-}
-}
-}
-
-💡 Save the token — you’ll need it for authenticated actions.
-
-🔑 2. Login
-mutation {
-login(email: "alice@example.com", password: "password123") {
-token
-user {
-id
-name
-email
-role
-}
-}
-}
-
-🧭 3. Get Current User (me)
 query {
-me {
+projects {
 id
 name
-email
-role
+description
+members { name }
+tasks { title }
 }
 }
 
-🧱 4. Create a Task
-
-Auth required (user or admin)
-
+✅ 7. Example Queries for Playground
+➤ Create a Project
 mutation {
-createTask(
-input: {
-title: "Finish GraphQL Backend"
-description: "Implement CRUD, filters, and pagination"
-status: "in-progress"
-priority: "high"
-banner: "🔥 Important Task"
-}
-) {
+createProject(name: "Task Manager v2", description: "Upgraded version") {
 id
-title
-status
-priority
-banner
-createdBy {
 name
-email
-}
+members { name }
 }
 }
 
-🔄 5. Update a Task
-
-Auth required — only the task owner or admin can update.
-
+➤ Add Task to Project
 mutation {
-updateTask(
-id: "TASK_ID_HERE"
-input: {
-title: "Finish GraphQL Backend ASAP"
-status: "in-progress"
-priority: "high"
-}
-) {
+addTaskToProject(projectId: "PROJECT_ID", taskId: "TASK_ID") {
 id
-title
-status
-priority
-}
-}
-
-❌ 6. Delete Your Own Task
-
-Auth required — only task creator can delete.
-
-mutation {
-deleteTask(id: "TASK_ID_HERE")
-}
-
-Returns true if deleted.
-
-🛡️ 7. Admin Delete Task
-
-Auth required — admin only.
-
-mutation {
-adminDeleteTask(id: "TASK_ID_HERE")
-}
-
-📋 8. Get Tasks (With Pagination, Filter, and Search)
-
-Auth required (any logged-in user).
-
-➤ Basic pagination:
-query {
-tasks(limit: 5, offset: 0) {
-tasks {
-id
-title
-status
-priority
-banner
-createdBy {
 name
-}
-}
-totalCount
-hasMore
+tasks { title }
 }
 }
 
-➤ Filter by Status and Priority:
-query {
-tasks(status: "pending", priority: "high", limit: 10, offset: 0) {
-tasks {
+➤ Add Member to Project
+mutation {
+addMemberToProject(projectId: "PROJECT_ID", userId: "USER_ID") {
 id
-title
-status
-priority
-}
-totalCount
-hasMore
+name
+members { name email }
 }
 }
 
-➤ Search by Title:
-query {
-tasks(search: "backend", limit: 5, offset: 0) {
-tasks {
+➤ Add Comment
+mutation {
+addComment(taskId: "TASK_ID", content: "Please finish this soon!") {
 id
-title
+content
+author { name }
+}
+}
+
+➤ Get Comments
+query {
+comments(taskId: "TASK_ID") {
+content
+author { name }
+}
+}
+
+➤ Notifications
+query {
+notifications {
+id
+message
+read
+}
+}
+
+➤ Mark Notification as Read
+mutation {
+markNotificationRead(id: "NOTIFICATION_ID") {
+id
+message
+read
+}
+}
+
+➤ Get Activity Logs
+query {
+activities(limit: 5) {
+action
+user { name }
+entityType
+details
+createdAt
+}
+}
+
+🧪 Test Queries in Playground
+➤ Get a Project
+query {
+getProject(id: "PROJECT_ID") {
+id
+name
+description
+members { name }
+tasks { title }
+}
+}
+
+➤ Edit Project
+mutation {
+updateProject(id: "PROJECT_ID", name: "Updated Project", description: "Now improved!") {
+id
+name
 description
 }
-totalCount
-hasMore
-}
 }
 
-➤ Infinite Scroll Example
-
-(simulate fetching next batch)
-
-query {
-tasks(limit: 5, offset: 5) {
-tasks {
-id
-title
-}
-hasMore
-}
-}
-
-🌟 9. Admin-Only Actions
-
-If you have an admin user (role = "admin"), you can:
-
-View and delete all tasks
-
-Potentially extend backend with more admin mutations, e.g.:
-
+➤ Delete Project
 mutation {
-promoteUser(email: "bob@example.com") {
+deleteProject(id: "PROJECT_ID")
+}
+
+➤ Get Comment
+query {
+getComment(id: "COMMENT_ID") {
 id
-name
-role
+content
+author { name }
 }
 }
 
-(You can add that later.)
+➤ Edit Comment
+mutation {
+updateComment(id: "COMMENT_ID", content: "Updated comment text") {
+id
+content
+}
+}
 
-⚡ Quick Admin Creation Tip
+➤ Delete Comment
+mutation {
+deleteComment(id: "COMMENT_ID")
+}
 
-To make an admin user quickly, update directly in Mongo shell:
+➤ Get Notification
+query {
+getNotification(id: "NOTIF_ID") {
+id
+message
+read
+}
+}
 
-db.users.updateOne({ email: "alice@example.com" }, { $set: { role: "admin" } })
+➤ Delete Notification
+mutation {
+deleteNotification(id: "NOTIF_ID")
+}
 
-Then re-login to get a new token reflecting the admin role.
+➤ Get Activity
+query {
+getActivity(id: "ACTIVITY_ID") {
+id
+action
+details
+user { name }
+}
+}
 
-🧪 Optional Testing Sequence
-
-Register or login → copy token
-
-me query → confirm login works
-
-Create a few tasks with different status and priority
-
-Fetch with filters and search
-
-Try updating/deleting tasks
-
-Switch to admin → test adminDeleteTask
+➤ Delete Activity (Admin Only)
+mutation {
+deleteActivity(id: "ACTIVITY_ID")
+}
