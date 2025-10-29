@@ -7,6 +7,7 @@ export interface ITask extends Document {
     priority: "low" | "medium" | "high";
     createdBy: mongoose.Types.ObjectId;
     banner?: string;
+    updatedAt?: Date;
 }
 
 const taskSchema = new Schema<ITask>(
@@ -28,5 +29,15 @@ const taskSchema = new Schema<ITask>(
     },
     { timestamps: true }
 );
+
+taskSchema.pre("save", function (next) {
+    this.updatedAt = new Date();
+    next();
+});
+
+taskSchema.post("save", function (doc) {
+    console.log(`✅ Task saved: ${doc.title}`);
+});
+
 
 export default mongoose.model<ITask>("Task", taskSchema);

@@ -1,0 +1,5 @@
+[2025-10-29T10:25:21.929Z] ERROR: Project validation failed: name: Path `name` is required. - Path: createProject
+[2025-10-29T10:28:23.118Z] ERROR: Project validation failed: name: Path `name` is required. - Path: createProject
+[2025-10-29T10:28:30.694Z] ERROR: Project validation failed: name: Path `name` is required. - Path: createProject
+[2025-10-29T10:28:32.318Z] ERROR: Project validation failed: name: Path `name` is required. - Path: createProject
+[2025-10-29T10:35:47.256Z] ERROR: Project validation failed: name: Path `name` is required. - Path: createProject

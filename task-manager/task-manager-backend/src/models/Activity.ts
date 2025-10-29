@@ -19,4 +19,8 @@ const activitySchema = new Schema<IActivity>(
     { timestamps: true }
 );
 
+activitySchema.post("save", function (doc) {
+    console.log(`🪶 Activity logged: ${doc.action}`);
+});
+
 export default mongoose.model<IActivity>("Activity", activitySchema);

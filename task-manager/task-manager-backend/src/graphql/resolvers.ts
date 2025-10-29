@@ -7,6 +7,7 @@ import Notification from "../models/Notification";
 import Activity from "../models/Activity";
 import { generateToken } from "../utils/generateToken";
 import { AuthRequest } from "../middleware/auth";
+import { taskValidator } from "../utils/validators";
 
 const baseResolvers = {
     Query: {
@@ -60,11 +61,18 @@ const baseResolvers = {
             return { token, user };
         },
 
-        createTask: async (_: any, { input }: any, { req }: { req: AuthRequest }) => {
+        createTask: async (_: any, { input }: any, { req }: any) => {
+            await taskValidator.validate(input);
             if (!req.user) throw new Error("Not authenticated");
             const task = await Task.create({ ...input, createdBy: req.user.id });
             return task.populate("createdBy");
         },
+
+        // createTask: async (_: any, { input }: any, { req }: { req: AuthRequest }) => {
+        //     if (!req.user) throw new Error("Not authenticated");
+        //     const task = await Task.create({ ...input, createdBy: req.user.id });
+        //     return task.populate("createdBy");
+        // },
 
         updateTask: async (_: any, { id, input }: any, { req }: { req: AuthRequest }) => {
             if (!req.user) throw new Error("Not authenticated");
@@ -217,111 +225,111 @@ export const extendedResolvers = {
             );
             return notif;
         }
-    },
+        ,
+        updateProject: async (_: any, { id, name, description }: any, { req }: any) => {
+            if (!req.user) throw new Error("Not authenticated");
+            const project = await Project.findById(id);
+            if (!project) throw new Error("Project not found");
+            if (project.createdBy.toString() !== req.user.id && req.user.role !== "admin") {
+                throw new Error("Unauthorized");
+            }
 
-    updateProject: async (_: any, { id, name, description }: any, { req }: any) => {
-        if (!req.user) throw new Error("Not authenticated");
-        const project = await Project.findById(id);
-        if (!project) throw new Error("Project not found");
-        if (project.createdBy.toString() !== req.user.id && req.user.role !== "admin") {
-            throw new Error("Unauthorized");
-        }
+            if (name) project.name = name;
+            if (description) project.description = description;
+            await project.save();
 
-        if (name) project.name = name;
-        if (description) project.description = description;
-        await project.save();
+            await Activity.create({
+                action: "UPDATE_PROJECT",
+                user: req.user.id,
+                entityType: "Project",
+                entityId: project._id,
+                details: `Updated project ${project.name}`,
+            });
 
-        await Activity.create({
-            action: "UPDATE_PROJECT",
-            user: req.user.id,
-            entityType: "Project",
-            entityId: project._id,
-            details: `Updated project ${project.name}`,
-        });
+            return project.populate(["members", "tasks"]);
+        },
 
-        return project.populate(["members", "tasks"]);
-    },
+        deleteProject: async (_: any, { id }: any, { req }: any) => {
+            if (!req.user) throw new Error("Not authenticated");
+            const project = await Project.findById(id);
+            if (!project) throw new Error("Project not found");
+            if (project.createdBy.toString() !== req.user.id && req.user.role !== "admin") {
+                throw new Error("Unauthorized");
+            }
 
-    deleteProject: async (_: any, { id }: any, { req }: any) => {
-        if (!req.user) throw new Error("Not authenticated");
-        const project = await Project.findById(id);
-        if (!project) throw new Error("Project not found");
-        if (project.createdBy.toString() !== req.user.id && req.user.role !== "admin") {
-            throw new Error("Unauthorized");
-        }
+            await project.deleteOne();
+            await Activity.create({
+                action: "DELETE_PROJECT",
+                user: req.user.id,
+                entityType: "Project",
+                entityId: id,
+                details: `Deleted project ${project.name}`,
+            });
+            return true;
+        },
 
-        await project.deleteOne();
-        await Activity.create({
-            action: "DELETE_PROJECT",
-            user: req.user.id,
-            entityType: "Project",
-            entityId: id,
-            details: `Deleted project ${project.name}`,
-        });
-        return true;
-    },
+        updateComment: async (_: any, { id, content }: any, { req }: any) => {
+            if (!req.user) throw new Error("Not authenticated");
+            const comment = await Comment.findById(id);
+            if (!comment) throw new Error("Comment not found");
+            if (comment.author.toString() !== req.user.id && req.user.role !== "admin") {
+                throw new Error("Unauthorized");
+            }
 
-    updateComment: async (_: any, { id, content }: any, { req }: any) => {
-        if (!req.user) throw new Error("Not authenticated");
-        const comment = await Comment.findById(id);
-        if (!comment) throw new Error("Comment not found");
-        if (comment.author.toString() !== req.user.id && req.user.role !== "admin") {
-            throw new Error("Unauthorized");
-        }
+            comment.content = content;
+            await comment.save();
 
-        comment.content = content;
-        await comment.save();
+            await Activity.create({
+                action: "UPDATE_COMMENT",
+                user: req.user.id,
+                entityType: "Task",
+                entityId: comment.task,
+                details: content.slice(0, 50),
+            });
 
-        await Activity.create({
-            action: "UPDATE_COMMENT",
-            user: req.user.id,
-            entityType: "Task",
-            entityId: comment.task,
-            details: content.slice(0, 50),
-        });
+            return comment.populate(["task", "author"]);
+        },
 
-        return comment.populate(["task", "author"]);
-    },
+        deleteComment: async (_: any, { id }: any, { req }: any) => {
+            if (!req.user) throw new Error("Not authenticated");
+            const comment = await Comment.findById(id);
+            if (!comment) throw new Error("Comment not found");
+            if (comment.author.toString() !== req.user.id && req.user.role !== "admin") {
+                throw new Error("Unauthorized");
+            }
 
-    deleteComment: async (_: any, { id }: any, { req }: any) => {
-        if (!req.user) throw new Error("Not authenticated");
-        const comment = await Comment.findById(id);
-        if (!comment) throw new Error("Comment not found");
-        if (comment.author.toString() !== req.user.id && req.user.role !== "admin") {
-            throw new Error("Unauthorized");
-        }
+            await comment.deleteOne();
 
-        await comment.deleteOne();
+            await Activity.create({
+                action: "DELETE_COMMENT",
+                user: req.user.id,
+                entityType: "Task",
+                entityId: comment.task,
+                details: `Deleted comment`,
+            });
 
-        await Activity.create({
-            action: "DELETE_COMMENT",
-            user: req.user.id,
-            entityType: "Task",
-            entityId: comment.task,
-            details: `Deleted comment`,
-        });
+            return true;
+        },
 
-        return true;
-    },
+        deleteNotification: async (_: any, { id }: any, { req }: any) => {
+            if (!req.user) throw new Error("Not authenticated");
+            const notification = await Notification.findOne({
+                _id: id,
+                user: req.user.id,
+            });
+            if (!notification) throw new Error("Notification not found");
 
-    deleteNotification: async (_: any, { id }: any, { req }: any) => {
-        if (!req.user) throw new Error("Not authenticated");
-        const notification = await Notification.findOne({
-            _id: id,
-            user: req.user.id,
-        });
-        if (!notification) throw new Error("Notification not found");
+            await notification.deleteOne();
 
-        await notification.deleteOne();
+            return true;
+        },
 
-        return true;
-    },
-
-    deleteActivity: async (_: any, { id }: any, { req }: any) => {
-        if (!req.user || req.user.role !== "admin")
-            throw new Error("Admin only");
-        await Activity.findByIdAndDelete(id);
-        return true;
+        deleteActivity: async (_: any, { id }: any, { req }: any) => {
+            if (!req.user || req.user.role !== "admin")
+                throw new Error("Admin only");
+            await Activity.findByIdAndDelete(id);
+            return true;
+        },
     },
 };
 

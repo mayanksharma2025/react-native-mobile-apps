@@ -17,4 +17,20 @@ const userSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  const bcrypt = await import("bcryptjs");
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+userSchema.methods.toJSON = function () {
+  const obj = this.toObject();
+  delete obj.password;
+  delete obj.__v;
+  return obj;
+};
+
+
+
 export default mongoose.model<IUser>("User", userSchema);
