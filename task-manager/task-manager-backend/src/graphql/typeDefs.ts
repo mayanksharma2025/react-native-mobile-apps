@@ -56,11 +56,18 @@ export const typeDefs = gql`
     createTask(input: TaskInput!): Task!
     updateTask(id: ID!, input: TaskInput!): Task!
     deleteTask(id: ID!): Boolean!
+    deleteUser(id: ID!): String!
+    deleteUserAdmin(id: ID!): String!
+    changeUserRole(id: ID!, role: String!): User!
     adminDeleteTask(id: ID!): Boolean!
   }
 
+  type Mutation {
+    updateUser(id: ID, name: String, email: String, password: String, role: String): User
+  }
 
-   type Project {
+
+  type Project {
   id: ID!
   name: String!
   description: String

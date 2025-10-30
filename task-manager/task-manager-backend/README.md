@@ -168,3 +168,33 @@ user { name }
 mutation {
 deleteActivity(id: "ACTIVITY_ID")
 }
+
+As a normal user:
+mutation {
+updateUser(name: "Updated Alice", password: "newpass123") {
+id
+name
+email
+role
+}
+}
+
+As an admin (update another user):
+
+mutation {
+updateUser(id: "671fb62a6d5e..." role: "admin" name: "Promoted Bob") {
+id
+name
+role
+}
+}
+
+🔸 Change user role (admin only)
+mutation {
+changeUserRole(id: "6901fd99c91d64118e9819b1", role: "admin") {
+id
+name
+email
+role
+}
+}

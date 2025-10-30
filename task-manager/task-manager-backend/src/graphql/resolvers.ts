@@ -8,6 +8,7 @@ import Activity from "../models/Activity";
 import { generateToken } from "../utils/generateToken";
 import { AuthRequest } from "../middleware/auth";
 import { taskValidator } from "../utils/validators";
+import { requireAdmin, requireSelfOrAdmin } from "../middleware/authHelpers";
 
 const baseResolvers = {
     Query: {
@@ -60,6 +61,102 @@ const baseResolvers = {
             const token = generateToken(user);
             return { token, user };
         },
+
+        updateUser: async (
+            _: any,
+            { id, name, email, password, role }: any,
+            { req }: { req: AuthRequest }
+        ) => {
+            const targetUserId = id || req.user?.id;
+            if (!targetUserId) throw new Error("User ID not provided");
+
+            // ✅ Reusable authorization
+            requireSelfOrAdmin(req, targetUserId);
+
+            const user = await User.findById(targetUserId);
+            if (!user) throw new Error("User not found");
+
+            if (name) user.name = name;
+            if (email) user.email = email;
+            if (password) user.password = password; // triggers pre-save hook
+            if (role && req.user?.role === "admin") user.role = role;
+
+            const savedUser = await user.save();
+
+            const result = savedUser.toJSON();
+            result.id = savedUser._id.toString();
+
+            return result;
+        },
+
+        deleteUser: async (_: any, { id }: any, { req }: { req: AuthRequest }) => {
+            requireAdmin(req); // ✅ Only admins can delete
+            return await User.findByIdAndDelete(id);
+        },
+
+        // ✅ Delete user (self or admin)
+        deleteUserAdmin: async (_: any, { id }: any, { req }: { req: AuthRequest }) => {
+            const targetUserId = id || req.user?.id;
+            if (!targetUserId) throw new Error("User ID not provided");
+
+            requireSelfOrAdmin(req, targetUserId);
+
+            const deleted = await User.findByIdAndDelete(targetUserId);
+            if (!deleted) throw new Error("User not found");
+
+            return "User deleted successfully";
+        },
+
+        // ✅ Change user role (admin only)
+        changeUserRole: async (_: any, { id, role }: any, { req }: { req: AuthRequest }) => {
+            requireAdmin(req);
+
+            const user = await User.findById(id);
+            if (!user) throw new Error("User not found");
+
+            user.role = role;
+            await user.save();
+
+            const result = user.toJSON();
+            result.id = user._id.toString();
+
+            return result;
+        },
+
+        // updateUser: async (
+        //     _: any,
+        //     { id, name, email, password, role }: any,
+        //     { req }: { req: AuthRequest }
+        // ) => {
+        //     if (!req.user) throw new Error("Unauthorized");
+
+        //     // If no id given → update self
+        //     const targetUserId = id || req.user.id;
+
+        //     // If not admin and trying to update another user → forbid
+        //     if (id && req.user.role !== "admin" && req.user.id !== id) {
+        //         throw new Error("Forbidden: insufficient permissions");
+        //     }
+
+        //     const updateData: any = {};
+        //     if (name) updateData.name = name;
+        //     if (email) updateData.email = email;
+        //     if (role && req.user.role === "admin") updateData.role = role; // only admin
+        //     if (password) {
+        //         const salt = await bcrypt.genSalt(10);
+        //         updateData.password = await bcrypt.hash(password, salt);
+        //     }
+
+        //     const updatedUser = await User.findByIdAndUpdate(
+        //         targetUserId,
+        //         { $set: updateData },
+        //         { new: true }
+        //     ).select("-password");
+
+        //     if (!updatedUser) throw new Error("User not found");
+
+        //     return updatedUser;
+        // },
 
         createTask: async (_: any, { input }: any, { req }: any) => {
             await taskValidator.validate(input);
