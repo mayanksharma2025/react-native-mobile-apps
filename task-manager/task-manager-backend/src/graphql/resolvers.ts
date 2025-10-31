@@ -221,7 +221,14 @@ export const extendedResolvers = {
                 .limit(limit);
         },
         comments: async (_: any, { taskId }: any) => {
-            return await Comment.find({ task: taskId }).populate("author");
+            return await Comment.find({ task: taskId }).populate("author").populate({
+                path: "task",
+                populate: {
+                    path: "createdBy",
+                    model: "User",
+                    select: "name email id role", // optional: limit fields
+                },
+            });
         },
         notifications: async (_: any, __: any, { req }: any) => {
             if (!req.user) throw new Error("Not authenticated");
