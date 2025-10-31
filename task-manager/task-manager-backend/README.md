@@ -57,6 +57,8 @@ This simply ignores it — Jest still works fine because it uses ts-jest to hand
 Make sure you have these dev dependencies installed:
 
 npm install --save-dev jest ts-jest @types/jest typescript
+npm install --save-dev mongodb-memory-server supertest
+npm install --save-dev supertest @types/supertest
 
 And initialize Jest for TypeScript:
 

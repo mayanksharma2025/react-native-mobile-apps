@@ -3,11 +3,12 @@
     "target": "ES2020",
     "module": "CommonJS",
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "include": ["src", "tests"]
+  "include": ["src", "tests", "jest.config.ts"],
+  "setupFiles": ["<rootDir>/tests/setupEnv.ts"]
 }
