@@ -97,3 +97,5 @@ export default config;
 
 npm test
 npx jest --runInBand
+npx jest tests/user.test.ts --runInBand
+npm test -- user.test.ts

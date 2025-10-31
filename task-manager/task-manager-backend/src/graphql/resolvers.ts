@@ -47,8 +47,10 @@ const baseResolvers = {
         register: async (_: any, { name, email, password }: any) => {
             const existing = await User.findOne({ email });
             if (existing) throw new Error("Email already in use");
-            const hashed = await bcrypt.hash(password, 10);
-            const user = await User.create({ name, email, password: hashed });
+
+            // ❌ Do NOT hash manually — the pre-save hook will do it
+            const user = await User.create({ name, email, password });
+
             const token = generateToken(user);
             return { token, user };
         },
@@ -56,8 +58,11 @@ const baseResolvers = {
         login: async (_: any, { email, password }: any) => {
             const user = await User.findOne({ email });
             if (!user) throw new Error("Invalid credentials");
-            const valid = await bcrypt.compare(password, user.password);
+
+            // ✅ use model method to verify password
+            const valid = await user.comparePassword(password);
             if (!valid) throw new Error("Invalid credentials");
+
             const token = generateToken(user);
             return { token, user };
         },
