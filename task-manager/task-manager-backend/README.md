@@ -96,3 +96,4 @@ export default config;
 ✅ Then npm test will just work.
 
 npm test
+npx jest --runInBand
