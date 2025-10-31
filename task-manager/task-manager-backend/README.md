@@ -99,3 +99,18 @@ npm test
 npx jest --runInBand
 npx jest tests/user.test.ts --runInBand
 npm test -- user.test.ts
+npx jest tests/task.test.ts --runInBand
+npx jest tests/task.test.ts --verbose
+
+PASS tests/task.test.ts (30.392 s)
+√ should update a task when authenticated (269 ms)
+√ should delete a task when authenticated (233 ms)
+🧠 Task GraphQL Resolvers
+√ should create a task when authenticated (232 ms)
+√ should fetch paginated tasks list (91 ms)
+
+Test Suites: 1 passed, 1 total
+Tests: 4 passed, 4 total
+Snapshots: 0 total
+Time: 31.175 s, estimated 40 s
+Ran all test suites matching tests/task.test.ts.
