@@ -1,200 +1,96 @@
+✅ Option 1 (Recommended): Expand rootDir
+
+Change your tsconfig.json like this:
+
+{
+"compilerOptions": {
+"target": "ES2020",
+"module": "CommonJS",
+"outDir": "dist",
+"rootDir": ".",
+"strict": true,
+"esModuleInterop": true,
+"skipLibCheck": true,
+"resolveJsonModule": true
+},
+"include": ["src", "tests", "jest.config.ts"]
+}
+
+This tells TypeScript:
+
+rootDir is your project root.
+
+It should include your main code (src), tests, and the Jest config file.
+
+✅ Works perfectly for most projects.
+
+⚙️ Option 2: Move config inside src/
+
+Move your config file into the src directory:
+
 src/
-┣ models/
-┃ ┣ Project.ts
-┃ ┣ Comment.ts
-┃ ┣ Notification.ts
-┃ ┗ Activity.ts
-┣ graphql/
-┃ ┗ typeDefs.ts (updated)
-┃ ┗ resolvers.ts (updated)
+├── jest.config.ts
+├── index.ts
+└── ...
 
-query {
-projects {
-id
-name
-description
-members { name }
-tasks { title }
-}
-}
+Then update your Jest script in package.json:
 
-✅ 7. Example Queries for Playground
-➤ Create a Project
-mutation {
-createProject(name: "Task Manager v2", description: "Upgraded version") {
-id
-name
-members { name }
-}
+"test": "jest --config ./src/jest.config.ts"
+
+Not as clean, but avoids changing rootDir.
+
+⚙️ Option 3: Ignore Jest config in TypeScript build
+
+If you don’t want TypeScript to even process Jest configs:
+
+{
+"compilerOptions": {
+...
+},
+"exclude": ["node_modules", "dist", "jest.config.ts"]
 }
 
-➤ Add Task to Project
-mutation {
-addTaskToProject(projectId: "PROJECT_ID", taskId: "TASK_ID") {
-id
-name
-tasks { title }
-}
-}
+This simply ignores it — Jest still works fine because it uses ts-jest to handle .ts configs.
 
-➤ Add Member to Project
-mutation {
-addMemberToProject(projectId: "PROJECT_ID", userId: "USER_ID") {
-id
-name
-members { name email }
-}
-}
+🧩 Bonus Tip:
 
-➤ Add Comment
-mutation {
-addComment(taskId: "TASK_ID", content: "Please finish this soon!") {
-id
-content
-author { name }
-}
-}
+Make sure you have these dev dependencies installed:
 
-➤ Get Comments
-query {
-comments(taskId: "TASK_ID") {
-content
-author { name }
-}
-}
+npm install --save-dev jest ts-jest @types/jest typescript
 
-➤ Notifications
-query {
-notifications {
-id
-message
-read
-}
-}
+And initialize Jest for TypeScript:
 
-➤ Mark Notification as Read
-mutation {
-markNotificationRead(id: "NOTIFICATION_ID") {
-id
-message
-read
-}
-}
+npx ts-jest config:init
 
-➤ Get Activity Logs
-query {
-activities(limit: 5) {
-action
-user { name }
-entityType
-details
-createdAt
-}
-}
+✅ Recommended Setup (clean & maintainable)
 
-🧪 Test Queries in Playground
-➤ Get a Project
-query {
-getProject(id: "PROJECT_ID") {
-id
-name
-description
-members { name }
-tasks { title }
-}
-}
+Here’s the clean structure for a backend using Jest + TypeScript:
 
-➤ Edit Project
-mutation {
-updateProject(id: "PROJECT_ID", name: "Updated Project", description: "Now improved!") {
-id
-name
-description
-}
-}
+task-manager-backend/
+├── src/
+│ ├── index.ts
+│ ├── routes/
+│ └── services/
+├── tests/
+│ ├── setup.ts
+│ └── example.test.ts
+├── jest.config.ts
+├── tsconfig.json
+└── package.json
 
-➤ Delete Project
-mutation {
-deleteProject(id: "PROJECT_ID")
-}
+And your jest.config.ts:
 
-➤ Get Comment
-query {
-getComment(id: "COMMENT_ID") {
-id
-content
-author { name }
-}
-}
+import type { Config } from 'jest';
 
-➤ Edit Comment
-mutation {
-updateComment(id: "COMMENT_ID", content: "Updated comment text") {
-id
-content
-}
-}
+const config: Config = {
+preset: 'ts-jest',
+testEnvironment: 'node',
+verbose: true,
+setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+};
 
-➤ Delete Comment
-mutation {
-deleteComment(id: "COMMENT_ID")
-}
+export default config;
 
-➤ Get Notification
-query {
-getNotification(id: "NOTIF_ID") {
-id
-message
-read
-}
-}
+✅ Then npm test will just work.
 
-➤ Delete Notification
-mutation {
-deleteNotification(id: "NOTIF_ID")
-}
-
-➤ Get Activity
-query {
-getActivity(id: "ACTIVITY_ID") {
-id
-action
-details
-user { name }
-}
-}
-
-➤ Delete Activity (Admin Only)
-mutation {
-deleteActivity(id: "ACTIVITY_ID")
-}
-
-As a normal user:
-mutation {
-updateUser(name: "Updated Alice", password: "newpass123") {
-id
-name
-email
-role
-}
-}
-
-As an admin (update another user):
-
-mutation {
-updateUser(id: "671fb62a6d5e..." role: "admin" name: "Promoted Bob") {
-id
-name
-role
-}
-}
-
-🔸 Change user role (admin only)
-mutation {
-changeUserRole(id: "6901fd99c91d64118e9819b1", role: "admin") {
-id
-name
-email
-role
-}
-}
+npm test
