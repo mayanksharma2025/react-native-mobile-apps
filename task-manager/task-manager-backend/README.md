@@ -101,6 +101,7 @@ npx jest tests/user.test.ts --runInBand
 npm test -- user.test.ts
 npx jest tests/task.test.ts --runInBand
 npx jest tests/task.test.ts --verbose
+npx jest tests/project.test.ts --runInBand
 
 PASS tests/task.test.ts (30.392 s)
 √ should update a task when authenticated (269 ms)
@@ -114,3 +115,7 @@ Tests: 4 passed, 4 total
 Snapshots: 0 total
 Time: 31.175 s, estimated 40 s
 Ran all test suites matching tests/task.test.ts.
+
+curl -X POST http://localhost:4000/graphql \
+ -H "Content-Type: application/json" \
+ -d '{"query":"{ \_\_type(name:\"Mutation\") { fields { name args { name type { kind name ofType { name } } } } } }"}'
