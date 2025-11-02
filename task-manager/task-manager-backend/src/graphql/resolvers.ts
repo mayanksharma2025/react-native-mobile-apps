@@ -19,7 +19,7 @@ const baseResolvers = {
 
         tasks: async (
             _: any,
-            { search, status, priority, limit, offset }: any,
+            { search, status, priority, createdBy, limit, offset }: any,
             { req }: { req: AuthRequest }
         ) => {
             if (!req.user) throw new Error("Not authenticated");
@@ -28,6 +28,9 @@ const baseResolvers = {
             if (status) filter.status = status;
             if (priority) filter.priority = priority;
             if (search) filter.title = { $regex: search, $options: "i" };
+            if (createdBy && createdBy.length > 0) {
+                filter.createdBy = { $in: createdBy };
+            }
 
             const totalCount = await Task.countDocuments(filter);
             const tasks = await Task.find(filter)
@@ -212,11 +215,29 @@ const baseResolvers = {
 
 export const extendedResolvers = {
     Query: {
-        projects: async (_: any, { limit = 10, offset = 0 }: any, { req }: any) => {
+        projects: async (_: any, { limit = 10, offset = 0, search = '', members = [], tasks = [] }: any, { req }: any) => {
             if (!req.user) throw new Error("Not authenticated");
-            return await Project.find({ members: req.user.id })
+            const filter: any = {};
+
+            if (search) filter.name = { $regex: search, $options: "i" };
+
+            // 👥 Filter by members (including the logged-in user)
+            if (members && members.length > 0) {
+                // Include both requested members and the logged-in user
+                filter.members = { $all: [req.user.id, ...members] };
+            } else {
+                // Default: only projects that the user is a member of
+                filter.members = req.user.id;
+            }
+
+            if (tasks && tasks.length > 0) {
+                filter.tasks = { $in: [...tasks] };
+            }
+
+            return await Project.find({ ...filter })
                 .populate("members")
                 .populate("tasks")
+                .populate("createdBy")
                 .skip(offset)
                 .limit(limit);
         },
@@ -232,7 +253,7 @@ export const extendedResolvers = {
         },
         notifications: async (_: any, __: any, { req }: any) => {
             if (!req.user) throw new Error("Not authenticated");
-            return await Notification.find({ user: req.user.id }).sort({ createdAt: -1 });
+            return await Notification.find({ user: req.user.id }).sort({ createdAt: -1 }).populate("user");
         },
         activities: async (_: any, { limit = 10 }: any) => {
             return await Activity.find().sort({ createdAt: -1 }).limit(limit).populate("user");

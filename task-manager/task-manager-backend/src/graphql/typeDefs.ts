@@ -1,11 +1,14 @@
 import { gql } from "apollo-server-express";
 
 export const typeDefs = gql`
+  scalar Date
+
   type User {
     id: ID!
     name: String!
     email: String!
     role: String!
+    createdAt: Date!
   }
 
   type Task {
@@ -16,8 +19,8 @@ export const typeDefs = gql`
     priority: String!
     banner: String
     createdBy: User!
-    createdAt: String
-    updatedAt: String
+    createdAt: Date!
+    updatedAt: Date!
   }
 
   type AuthPayload {
@@ -45,6 +48,7 @@ export const typeDefs = gql`
       search: String
       status: String
       priority: String
+      createdBy: [ID!]
       limit: Int!
       offset: Int!
     ): PaginatedTasks!
@@ -74,7 +78,7 @@ export const typeDefs = gql`
   members: [User!]
   tasks: [Task!]
   createdBy: User!
-  createdAt: String
+  createdAt: Date!
 }
 
  type Comment {
@@ -82,7 +86,7 @@ export const typeDefs = gql`
   task: Task!
   author: User!
   content: String!
-  createdAt: String
+  createdAt: Date!
 }
 
  type Notification {
@@ -91,7 +95,7 @@ export const typeDefs = gql`
   message: String!
   read: Boolean!
   type: String!
-  createdAt: String
+  createdAt: Date!
 }
 
  type Activity {
@@ -101,11 +105,11 @@ export const typeDefs = gql`
   entityType: String!
   entityId: ID!
   details: String
-  createdAt: String
+  createdAt: Date!
 }
 
  type Query {
-  projects(limit: Int, offset: Int): [Project!]
+  projects(limit: Int, offset: Int, search: String, members: [ID!], tasks: [ID!]): [Project!]
   comments(taskId: ID!): [Comment!]
   notifications: [Notification!]
   activities(limit: Int): [Activity!]
@@ -137,7 +141,6 @@ export const typeDefs = gql`
   deleteNotification(id: ID!): Boolean!
   deleteActivity(id: ID!): Boolean!
 }
-
 `;
 
 

@@ -119,3 +119,23 @@ Ran all test suites matching tests/task.test.ts.
 curl -X POST http://localhost:4000/graphql \
  -H "Content-Type: application/json" \
  -d '{"query":"{ \_\_type(name:\"Mutation\") { fields { name args { name type { kind name ofType { name } } } } } }"}'
+
+<!-- Variables -->
+
+{
+"limit": 15,
+"getActivityId": null,
+"taskId": null,
+"offset": 0,
+"name": null,
+"email": "mayankece155@gmail.com",
+"password": "123123",
+"updateUserId": "6901fd99c91d64118e9819b1",
+"deleteUserId": "6904be76a449743401950d7d",
+"search": "Project 6",
+"createdBy": "6901beeeccff7b15330f7b62",
+"members": [
+"6901beeeccff7b15330f7b62"
+],
+"tasks": ["6902fa319e76125274cbc6a0"]
+}
