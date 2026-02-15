@@ -4,7 +4,7 @@ import { IUser } from "../types/auth.types";
 
 interface AuthContextType {
   user: IUser | null;
-  setUser: (user: IUser | null) => void;
+  setUser: React.Dispatch<React.SetStateAction<IUser | null>>;
   logout: () => Promise<void>;
   loading: boolean;
   saveUser: (user: IUser) => Promise<void>;
@@ -28,7 +28,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<IUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Load user from AsyncStorage
   useEffect(() => {
@@ -36,7 +36,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const storedUser = await AsyncStorage.getItem("user");
         if (storedUser) {
-          setUser(JSON.parse(storedUser));
+          const parsedUser: IUser = JSON.parse(storedUser);
+          setUser(parsedUser);
         }
       } catch (error) {
         console.log("Failed to load user:", error);
@@ -44,21 +45,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setLoading(false);
       }
     };
+
     loadUser();
   }, []);
 
-  const saveUser = async (user: IUser) => {
-    setUser(user);
-    await AsyncStorage.setItem("user", JSON.stringify(user));
+  const saveUser = async (userData: IUser): Promise<void> => {
+    setUser(userData);
+    await AsyncStorage.setItem("user", JSON.stringify(userData));
   };
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     await AsyncStorage.removeItem("token");
     await AsyncStorage.removeItem("user");
     setUser(null);
   };
 
-  // Compute roles
   const isAdmin = user?.role === "admin";
   const isUser = user?.role === "user";
 

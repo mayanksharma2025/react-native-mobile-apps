@@ -68,7 +68,7 @@ const TasksScreen: React.FC = () => {
     [navigation],
   );
 
-  console.log(tasks.map((t) => t.id));
+  // console.log(tasks.map((t) => t.id));
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>

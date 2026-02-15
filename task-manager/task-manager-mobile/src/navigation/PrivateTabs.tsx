@@ -6,6 +6,7 @@ import { Text, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../context/AuthContext";
+import ProfileScreen from "../screens/ProfileScreen";
 
 export type PrivateTabParamList = {
   Tasks: undefined;
@@ -16,11 +17,11 @@ export type PrivateTabParamList = {
 
 const Tab = createBottomTabNavigator<PrivateTabParamList>();
 
-const ProfileScreen: React.FC = () => {
-  return (
-    <Text style={{ flex: 1, textAlign: "center", marginTop: 50 }}>Profile</Text>
-  );
-};
+// const ProfileScreen: React.FC = () => {
+//   return (
+//     <Text style={{ flex: 1, textAlign: "center", marginTop: 50 }}>Profile</Text>
+//   );
+// };
 
 const PrivateTabs: React.FC = () => {
   const { setUser } = useContext(AuthContext);
