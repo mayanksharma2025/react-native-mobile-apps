@@ -3,7 +3,7 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import LoginScreen from "../screens/auth/LoginScreen";
 import RegisterScreen from "../screens/auth/RegisterScreen";
-import TasksScreen from "../screens/tasks/TasksScreen";
+import PublicTasksScreen from "../screens/tasks/PublicTasksScreen";
 
 export type PublicTabParamList = {
   Login: undefined;
@@ -24,7 +24,7 @@ const PublicTabs: React.FC = () => {
     >
       <Tab.Screen name="Login" component={LoginScreen} />
       <Tab.Screen name="Register" component={RegisterScreen} />
-      {/* <Tab.Screen name="Tasks" component={TasksScreen} /> */}
+      <Tab.Screen name="Tasks" component={PublicTasksScreen} />
     </Tab.Navigator>
   );
 };

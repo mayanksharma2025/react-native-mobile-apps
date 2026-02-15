@@ -44,6 +44,45 @@ export const fetchTasks = async (
   return data.tasks.tasks;
 };
 
+export const fetchTasksPublic = async (
+  limit: number,
+  offset: number,
+): Promise<ITask[]> => {
+  const client = await getGraphQLClient();
+
+  const query = `
+    query PublicTasks($limit: Int!, $offset: Int!) {
+      publicTasks(limit: $limit, offset: $offset) {
+        tasks {
+          id
+          title
+          description
+          status
+          priority
+          createdBy {
+            id
+            name
+            email
+            role
+          }
+          createdAt
+          updatedAt
+        }
+        totalCount
+        hasMore
+      }
+    }
+  `;
+
+  const variables = { limit, offset };
+
+  const data = await client.request<{
+    publicTasks: { tasks: ITask[] };
+  }>(query, variables);
+
+  return data.publicTasks.tasks;
+};
+
 // --- Create task ---
 export const createTask = async (input: {
   title: string;

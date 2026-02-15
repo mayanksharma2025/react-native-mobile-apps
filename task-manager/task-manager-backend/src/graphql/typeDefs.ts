@@ -52,6 +52,14 @@ export const typeDefs = gql`
       limit: Int!
       offset: Int!
     ): PaginatedTasks!
+
+    publicTasks(
+      search: String
+      status: String
+      priority: String
+      limit: Int!
+      offset: Int!
+    ): PaginatedTasks!
   }
 
   type Mutation {
@@ -67,81 +75,89 @@ export const typeDefs = gql`
   }
 
   type Mutation {
-    updateUser(id: ID, name: String, email: String, password: String, role: String): User
+    updateUser(
+      id: ID
+      name: String
+      email: String
+      password: String
+      role: String
+    ): User
   }
 
-
   type Project {
-  id: ID!
-  name: String!
-  description: String
-  members: [User!]
-  tasks: [Task!]
-  createdBy: User!
-  createdAt: Date!
-}
+    id: ID!
+    name: String!
+    description: String
+    members: [User!]
+    tasks: [Task!]
+    createdBy: User!
+    createdAt: Date!
+  }
 
- type Comment {
-  id: ID!
-  task: Task!
-  author: User!
-  content: String!
-  createdAt: Date!
-}
+  type Comment {
+    id: ID!
+    task: Task!
+    author: User!
+    content: String!
+    createdAt: Date!
+  }
 
- type Notification {
-  id: ID!
-  user: User!
-  message: String!
-  read: Boolean!
-  type: String!
-  createdAt: Date!
-}
+  type Notification {
+    id: ID!
+    user: User!
+    message: String!
+    read: Boolean!
+    type: String!
+    createdAt: Date!
+  }
 
- type Activity {
-  id: ID!
-  action: String!
-  user: User!
-  entityType: String!
-  entityId: ID!
-  details: String
-  createdAt: Date!
-}
+  type Activity {
+    id: ID!
+    action: String!
+    user: User!
+    entityType: String!
+    entityId: ID!
+    details: String
+    createdAt: Date!
+  }
 
- type Query {
-  projects(limit: Int, offset: Int, search: String, members: [ID!], tasks: [ID!]): [Project!]
-  comments(taskId: ID!): [Comment!]
-  notifications: [Notification!]
-  activities(limit: Int): [Activity!]
-}
+  type Query {
+    projects(
+      limit: Int
+      offset: Int
+      search: String
+      members: [ID!]
+      tasks: [ID!]
+    ): [Project!]
+    comments(taskId: ID!): [Comment!]
+    notifications: [Notification!]
+    activities(limit: Int): [Activity!]
+  }
 
- type Mutation {
-  createProject(name: String!, description: String): Project!
-  addTaskToProject(projectId: ID!, taskId: ID!): Project!
-  addMemberToProject(projectId: ID!, userId: ID!): Project!
+  type Mutation {
+    createProject(name: String!, description: String): Project!
+    addTaskToProject(projectId: ID!, taskId: ID!): Project!
+    addMemberToProject(projectId: ID!, userId: ID!): Project!
 
-  addComment(taskId: ID!, content: String!): Comment!
-  markNotificationRead(id: ID!): Notification!
-}
+    addComment(taskId: ID!, content: String!): Comment!
+    markNotificationRead(id: ID!): Notification!
+  }
 
- type Query {
-  getProject(id: ID!): Project
-  getComment(id: ID!): Comment
-  getNotification(id: ID!): Notification
-  getActivity(id: ID!): Activity
-}
+  type Query {
+    getProject(id: ID!): Project
+    getComment(id: ID!): Comment
+    getNotification(id: ID!): Notification
+    getActivity(id: ID!): Activity
+  }
 
- type Mutation {
-  updateProject(id: ID!, name: String, description: String): Project!
-  deleteProject(id: ID!): Boolean!
+  type Mutation {
+    updateProject(id: ID!, name: String, description: String): Project!
+    deleteProject(id: ID!): Boolean!
 
-  updateComment(id: ID!, content: String!): Comment!
-  deleteComment(id: ID!): Boolean!
+    updateComment(id: ID!, content: String!): Comment!
+    deleteComment(id: ID!): Boolean!
 
-  deleteNotification(id: ID!): Boolean!
-  deleteActivity(id: ID!): Boolean!
-}
+    deleteNotification(id: ID!): Boolean!
+    deleteActivity(id: ID!): Boolean!
+  }
 `;
-
-
-

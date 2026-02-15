@@ -9,6 +9,7 @@ import {
   createTask,
   updateTask,
   deleteTask,
+  fetchTasksPublic,
 } from "../api/task.api";
 import { ITask } from "../types/task.types";
 import { queryKeys } from "../constants/queryKeys";
@@ -21,6 +22,20 @@ export const useTasks = (limit: number, offset: number, userId: string) => {
     keepPreviousData: true,
     staleTime: 1000 * 60,
   } as any);
+};
+
+export const usePublicTasksInfinite = (limit: number) => {
+  return useInfiniteQuery<ITask[], Error>({
+    queryKey: ["public-tasks", limit],
+    queryFn: ({ pageParam = 0 }) =>
+      fetchTasksPublic(limit, pageParam as number),
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < limit) return undefined;
+      return allPages.length * limit;
+    },
+    staleTime: 1000 * 60,
+    initialPageParam: 0,
+  });
 };
 
 export const useTasksInfinite = (limit: number, userId: string) => {
