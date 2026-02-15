@@ -134,3 +134,22 @@ export const changeUserRole = async (
 
   return data.changeUserRole;
 };
+
+export const fetchUsers = async (): Promise<IUser[]> => {
+  const client = await getGraphQLClient();
+
+  const query = `
+    query Users {
+      users {
+        id
+        name
+        email
+        role
+      }
+    }
+  `;
+
+  const data = await client.request<{ users: IUser[] }>(query);
+
+  return data.users;
+};

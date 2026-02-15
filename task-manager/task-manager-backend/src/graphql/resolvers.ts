@@ -12,6 +12,18 @@ import { requireAdmin, requireSelfOrAdmin } from "../middleware/authHelpers";
 
 const baseResolvers = {
   Query: {
+    users: async (_: any, __: any, { req }: { req: AuthRequest }) => {
+      requireAdmin(req); // only admin allowed
+
+      const users = await User.find();
+
+      return users.map((user) => {
+        const result = user.toJSON();
+        result.id = user._id.toString();
+        return result;
+      });
+    },
+
     me: async (_: any, __: any, { req }: { req: AuthRequest }) => {
       if (!req.user) throw new Error("Not authenticated");
       return await User.findById(req.user.id);

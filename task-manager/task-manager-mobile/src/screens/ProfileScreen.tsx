@@ -6,9 +6,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from "react-native";
 import { updateUser, deleteUser, changeUserRole } from "../api/auth.api";
 import { AuthContext } from "../context/AuthContext";
+import AdminUserList from "../component/AdminUserList";
 
 const ProfileScreen: React.FC = () => {
   const { user, saveUser, logout, isAdmin } = useContext(AuthContext);
@@ -77,52 +79,56 @@ const ProfileScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Profile</Text>
+    <ScrollView style={styles.container}>
+      <View>
+        <Text style={styles.title}>Profile</Text>
 
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="Name"
-      />
+        <TextInput
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+          placeholder="Name"
+        />
 
-      <TextInput
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        placeholder="Email"
-        autoCapitalize="none"
-      />
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Email"
+          autoCapitalize="none"
+        />
 
-      <TextInput
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-        placeholder="New Password"
-        secureTextEntry
-      />
+        <TextInput
+          style={styles.input}
+          value={password}
+          onChangeText={setPassword}
+          placeholder="New Password"
+          secureTextEntry
+        />
 
-      <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-        <Text style={styles.buttonText}>Update Profile</Text>
-      </TouchableOpacity>
-
-      {isAdmin && (
-        <TouchableOpacity
-          style={[styles.button, styles.adminButton]}
-          onPress={handleRoleChange}
-        >
-          <Text style={styles.buttonText}>Toggle Role</Text>
+        <TouchableOpacity style={styles.button} onPress={handleUpdate}>
+          <Text style={styles.buttonText}>Update Profile</Text>
         </TouchableOpacity>
-      )}
 
-      <TouchableOpacity
-        style={[styles.button, styles.deleteButton]}
-        onPress={handleDelete}
-      >
-        <Text style={styles.buttonText}>Delete Account</Text>
-      </TouchableOpacity>
-    </View>
+        {isAdmin && (
+          <TouchableOpacity
+            style={[styles.button, styles.adminButton]}
+            onPress={handleRoleChange}
+          >
+            <Text style={styles.buttonText}>Toggle Role</Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity
+          style={[styles.button, styles.deleteButton]}
+          onPress={handleDelete}
+        >
+          <Text style={styles.buttonText}>Delete Account</Text>
+        </TouchableOpacity>
+
+        {isAdmin && <AdminUserList />}
+      </View>
+    </ScrollView>
   );
 };
 
