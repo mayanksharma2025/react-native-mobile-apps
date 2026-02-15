@@ -3,3 +3,53 @@
 [2025-10-29T10:28:30.694Z] ERROR: Project validation failed: name: Path `name` is required. - Path: createProject
 [2025-10-29T10:28:32.318Z] ERROR: Project validation failed: name: Path `name` is required. - Path: createProject
 [2025-10-29T10:35:47.256Z] ERROR: Project validation failed: name: Path `name` is required. - Path: createProject
+[2026-02-14T11:48:30.739Z] ERROR: secretOrPrivateKey must have a value - Path: register
+[2026-02-14T11:50:42.345Z] ERROR: Not authenticated - Path: me
+[2026-02-14T11:50:44.795Z] ERROR: Not authenticated - Path: me
+[2026-02-14T11:51:20.351Z] ERROR: Email already in use - Path: register
+[2026-02-14T11:51:35.074Z] ERROR: secretOrPrivateKey must have a value - Path: register
+[2026-02-14T11:54:44.513Z] ERROR: Not authenticated - Path: me
+[2026-02-14T11:56:29.533Z] ERROR: Not authenticated - Path: me
+[2026-02-14T11:56:37.883Z] ERROR: Not authenticated - Path: me
+[2026-02-14T12:03:52.486Z] ERROR: Not authenticated - Path: me
+[2026-02-14T12:04:35.444Z] ERROR: Not authenticated - Path: me
+[2026-02-14T12:15:01.830Z] ERROR: Not authenticated - Path: me
+[2026-02-14T12:17:32.691Z] ERROR: Variable "$input" of non-null type "TaskInput!" must not be null. - Path: undefined
+[2026-02-14T12:18:40.590Z] ERROR: Variable "$input" of required type "TaskInput!" was not provided. - Path: undefined
+[2026-02-14T12:19:16.355Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T12:19:52.032Z] ERROR: Task validation failed: status: `done` is not a valid enum value for path `status`. - Path: createTask
+[2026-02-14T15:06:28.271Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:06:29.231Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:06:29.426Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:06:29.642Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:06:29.891Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:06:30.088Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:06:30.287Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:06:30.496Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:06:30.747Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:06:30.953Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:06:31.161Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:38:00.193Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:38:00.439Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:38:00.914Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:38:01.143Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:38:01.375Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:38:01.620Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:38:01.923Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:38:02.289Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:38:02.487Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T15:38:11.536Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T17:33:08.111Z] ERROR: Email already in use - Path: register
+[2026-02-14T17:33:13.212Z] ERROR: Email already in use - Path: register
+[2026-02-14T17:38:54.638Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T19:12:35.498Z] ERROR: priority is a required field - Path: createTask
+[2026-02-14T19:14:53.506Z] ERROR: priority is a required field - Path: createTask
+[2026-02-15T04:40:14.817Z] ERROR: priority is a required field - Path: createTask
+[2026-02-15T05:13:00.251Z] ERROR: Variable "$input" of required type "TaskInput!" was not provided. - Path: undefined
+[2026-02-15T05:13:06.434Z] ERROR: Variable "$input" of required type "TaskInput!" was not provided. - Path: undefined
+[2026-02-15T05:13:07.625Z] ERROR: Variable "$input" of required type "TaskInput!" was not provided. - Path: undefined
+[2026-02-15T05:14:32.939Z] ERROR: Variable "$input" of required type "TaskInput!" was not provided. - Path: undefined
+[2026-02-15T05:17:11.126Z] ERROR: Variable "$input" of required type "TaskInput!" was not provided. - Path: undefined
+[2026-02-15T05:17:13.046Z] ERROR: Variable "$input" of required type "TaskInput!" was not provided. - Path: undefined
+[2026-02-15T05:17:40.650Z] ERROR: Variable "$input" of required type "TaskInput!" was not provided. - Path: undefined
+[2026-02-15T05:23:12.963Z] ERROR: Variable "$input" of required type "TaskInput!" was not provided. - Path: undefined
