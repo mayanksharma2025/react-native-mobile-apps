@@ -25,7 +25,7 @@ const TaskFormScreen = () => {
   const offset = 0;
 
   // Fetch tasks if editing
-  const { data: tasks } = useTasks(limit, offset);
+  const { data: tasks } = useTasks(limit, offset, user.id);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -35,8 +35,8 @@ const TaskFormScreen = () => {
   const [priority, setPriority] = useState<"low" | "medium" | "high">("low");
   const [banner, setBanner] = useState("");
 
-  const createTaskMutation = useCreateTask(limit, offset);
-  const updateTaskMutation = useUpdateTask(limit, offset);
+  const createTaskMutation = useCreateTask(limit, offset, user.id);
+  const updateTaskMutation = useUpdateTask(limit, offset, user.id);
 
   // Pre-fill form if editing
   useEffect(() => {
@@ -141,8 +141,7 @@ const TaskFormScreen = () => {
         title={taskId ? "Update Task" : "Create Task"}
         onPress={handleSubmit}
         loading={
-          ((taskId ? updateTaskMutation : createTaskMutation) as any)
-            .isLoading as boolean
+          taskId ? updateTaskMutation.isPending : createTaskMutation.isPending
         }
         containerStyle={{ marginTop: 20 }}
       />

@@ -1,13 +1,16 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useContext } from "react";
 import { View, FlatList, RefreshControl } from "react-native";
 import { ListItem, Button, Icon, Text } from "react-native-elements";
 import { useTasksInfinite, useDeleteTask } from "../../hooks/useTasks";
 import { ITask } from "../../types/task.types";
 import { useNavigation } from "@react-navigation/native";
+import { IUser } from "@/src/types/auth.types";
+import { AuthContext } from "@/src/context/AuthContext";
 
 const TasksScreen: React.FC = () => {
   const limit = 10;
   const navigation = useNavigation<any>();
+  const { user }: { user: IUser } = useContext(AuthContext);
 
   const {
     data,
@@ -17,9 +20,10 @@ const TasksScreen: React.FC = () => {
     isLoading,
     refetch,
     isFetching,
-  } = useTasksInfinite(limit);
+  } = useTasksInfinite(limit, user.id);
 
-  const deleteTaskMutation = useDeleteTask(limit, 0); // offset not needed for infinite query
+  const deleteTaskMutation = useDeleteTask(limit, 0, user.id);
+  // offset not needed for infinite query
 
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this task?")) {
@@ -33,32 +37,38 @@ const TasksScreen: React.FC = () => {
   // Render each task item
   const renderItem = useCallback(
     ({ item: task }: { item: ITask }) => (
-      <ListItem key={task.id} bottomDivider>
-        <Icon name="task" type="material" />
-        <ListItem.Content>
-          <ListItem.Title>{task.title}</ListItem.Title>
-          <ListItem.Subtitle>
-            {task.description ?? "No description"}
-          </ListItem.Subtitle>
-          <Text>Status: {task.status}</Text>
-          <Text>Priority: {task.priority}</Text>
-        </ListItem.Content>
-        <Button
-          icon={{ name: "edit", type: "material", color: "#fff" }}
-          buttonStyle={{ backgroundColor: "#4caf50", marginRight: 5 }}
-          onPress={() =>
-            navigation.getParent()?.navigate("CreateTask", { taskId: task.id })
-          }
-        />
-        <Button
-          icon={{ name: "delete", type: "material", color: "#fff" }}
-          buttonStyle={{ backgroundColor: "red" }}
-          onPress={() => handleDelete(task.id)}
-        />
+      <ListItem bottomDivider>
+        <>
+          <Icon name="task" type="material" />
+          <ListItem.Content>
+            <ListItem.Title>{task.title}</ListItem.Title>
+            <ListItem.Subtitle>
+              {task.description ?? "No description"}
+            </ListItem.Subtitle>
+            <Text>Status: {task.status}</Text>
+            <Text>Priority: {task.priority}</Text>
+          </ListItem.Content>
+          <Button
+            icon={{ name: "edit", type: "material", color: "#fff" }}
+            buttonStyle={{ backgroundColor: "#4caf50", marginRight: 5 }}
+            onPress={() =>
+              navigation
+                .getParent()
+                ?.navigate("CreateTask", { taskId: task.id })
+            }
+          />
+          <Button
+            icon={{ name: "delete", type: "material", color: "#fff" }}
+            buttonStyle={{ backgroundColor: "red" }}
+            onPress={() => handleDelete(task.id)}
+          />
+        </>
       </ListItem>
     ),
     [navigation],
   );
+
+  console.log(tasks.map((t) => t.id));
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 16 }}>
@@ -78,7 +88,7 @@ const TasksScreen: React.FC = () => {
       ) : (
         <FlatList
           data={tasks}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => `${item.createdAt}`}
           renderItem={renderItem}
           onEndReached={() => {
             if (hasNextPage && !isFetchingNextPage) fetchNextPage();

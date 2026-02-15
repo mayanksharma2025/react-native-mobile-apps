@@ -4,12 +4,14 @@ import { ITask } from "../types/task.types";
 // --- Fetch tasks ---
 export const fetchTasks = async (
   limit: number,
-  offset: number
+  offset: number,
+  userId?: string,
 ): Promise<ITask[]> => {
   const client = await getGraphQLClient();
+
   const query = `
-    query Tasks($limit: Int!, $offset: Int!) {
-      tasks(limit: $limit, offset: $offset) {
+    query Tasks($limit: Int!, $offset: Int!, $createdBy: [ID!]) {
+      tasks(limit: $limit, offset: $offset, createdBy: $createdBy) {
         tasks {
           id
           title
@@ -28,8 +30,17 @@ export const fetchTasks = async (
       }
     }
   `;
-  const variables = { limit, offset };
-  const data = await client.request<{ tasks: { tasks: ITask[] } }>(query, variables);
+
+  const variables = {
+    limit,
+    offset,
+    createdBy: [userId],
+  };
+
+  const data = await client.request<{
+    tasks: { tasks: ITask[] };
+  }>(query, variables);
+
   return data.tasks.tasks;
 };
 
@@ -66,7 +77,7 @@ export const createTask = async (input: {
 // --- Update task ---
 export const updateTask = async (
   id: string,
-  input: Partial<ITask>
+  input: Partial<ITask>,
 ): Promise<ITask> => {
   const client = await getGraphQLClient();
   const mutation = `
@@ -102,6 +113,9 @@ export const deleteTask = async (id: string): Promise<boolean> => {
     }
   `;
   const variables = { id };
-  const data = await client.request<{ deleteTask: boolean }>(mutation, variables);
+  const data = await client.request<{ deleteTask: boolean }>(
+    mutation,
+    variables,
+  );
   return data.deleteTask;
 };

@@ -10,7 +10,7 @@ export interface ITask {
   description?: string;
   status: "pending" | "in-progress" | "completed";
   priority: "low" | "medium" | "high";
-  banner?: string;          // add this
+  banner?: string; // add this
   createdBy: IUser;
   createdAt: string;
   updatedAt: string;
