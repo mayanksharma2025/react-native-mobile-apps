@@ -50,6 +50,14 @@ const TaskFormScreen = () => {
         setBanner(taskToEdit.banner ?? "");
       }
     }
+    if (!taskId) {
+      setTitle("");
+      setDescription("");
+      setStatus("pending");
+      setPriority("low");
+      setBanner("");
+      return;
+    }
   }, [taskId, tasks]);
 
   const handleSubmit = async () => {
