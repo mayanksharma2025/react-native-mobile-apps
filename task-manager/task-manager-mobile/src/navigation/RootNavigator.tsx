@@ -6,6 +6,7 @@ import PrivateTabs from "./PrivateTabs";
 import { AuthContext } from "../context/AuthContext";
 import SplashScreen from "../screens/SplashScreen"; // optional loading screen
 import { ITask } from "../types/task.types";
+import AdminEditUserScreen from "../screens/AdminEditUserScreen";
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -16,6 +17,7 @@ export type RootStackParamList = {
   Login: undefined;
   Tasks: undefined;
   PrivateTabs: undefined;
+  AdminEditUser: { userId: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -31,7 +33,13 @@ const RootNavigator = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
-          <Stack.Screen name="Private" component={PrivateTabs} />
+          <>
+            <Stack.Screen name="Private" component={PrivateTabs} />
+            <Stack.Screen
+              name="AdminEditUser"
+              component={AdminEditUserScreen}
+            />
+          </>
         ) : (
           <Stack.Screen name="Public" component={PublicTabs} />
         )}

@@ -7,6 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../context/AuthContext";
 import ProfileScreen from "../screens/ProfileScreen";
+import AdminEditUserScreen from "../screens/AdminEditUserScreen";
 
 export type PrivateTabParamList = {
   Tasks: undefined;
@@ -51,6 +52,15 @@ const PrivateTabs: React.FC = () => {
       <Tab.Screen name="Tasks" component={TasksScreen} />
       <Tab.Screen name="CreateTask" component={CreateTaskScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
+
+      {/* <Tab.Screen
+        name="AdminEditUser"
+        component={AdminEditUserScreen}
+        options={{
+          tabBarButton: () => null, // hides button
+          tabBarStyle: { display: "none" }, // optional (see note below)
+        }}
+      /> */}
 
       {/* Logout Tab */}
       <Tab.Screen

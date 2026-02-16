@@ -17,6 +17,14 @@ import {
   useChangeUserRole,
 } from "../hooks/useUsers";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../navigation/RootNavigator";
+
+type NavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "AdminEditUser"
+>;
 
 const ProfileScreen: React.FC = () => {
   const { user, saveUser, logout, isAdmin } = useContext(AuthContext);
@@ -29,6 +37,8 @@ const ProfileScreen: React.FC = () => {
   const updateMutation = useUpdateProfile();
   const deleteMutation = useDeleteUser();
   const roleMutation = useChangeUserRole();
+
+  const navigation = useNavigation<NavigationProp>();
 
   if (!user) return null;
 
@@ -168,6 +178,24 @@ const ProfileScreen: React.FC = () => {
                   color="error"
                   onPress={() => handleDeleteUser(item.id)}
                   containerStyle={{ flex: 1 }}
+                />
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginTop: 10,
+                }}
+              >
+                <Button
+                  title="Edit"
+                  type="outline"
+                  containerStyle={{ flex: 1 }}
+                  onPress={() =>
+                    navigation.navigate("AdminEditUser", {
+                      userId: item.id,
+                    })
+                  }
                 />
               </View>
             </Card>

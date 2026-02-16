@@ -72,3 +72,54 @@ export const useChangeUserRole = () => {
     },
   });
 };
+
+// export const useAdminUpdateUser = () => {
+//   const queryClient = useQueryClient();
+
+//   return useMutation<IUser, Error, { id: string; data: Partial<IUser> }>({
+//     mutationFn: ({ id, data }) => updateUser({ id, ...data }),
+
+//     onSuccess: () => {
+//       queryClient.invalidateQueries({ queryKey: USERS_KEY });
+//     },
+//   });
+// };
+
+export const useAdminUpdateUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<IUser, Error, { id: string; data: Partial<IUser> }>({
+    mutationFn: ({ id, data }) => updateUser({ id, ...data }),
+
+    // 🔥 OPTIMISTIC UPDATE
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: USERS_KEY });
+
+      const previousUsers = queryClient.getQueryData<IUser[]>(USERS_KEY);
+
+      if (previousUsers) {
+        queryClient.setQueryData<IUser[]>(
+          USERS_KEY,
+          (old) =>
+            old?.map((user) =>
+              user.id === id ? { ...user, ...data } : user,
+            ) ?? [],
+        );
+      }
+
+      return { previousUsers };
+    },
+
+    // 🔁 ROLLBACK IF ERROR
+    onError: (_err, _variables, context: any) => {
+      if (context?.previousUsers) {
+        queryClient.setQueryData(USERS_KEY, context.previousUsers);
+      }
+    },
+
+    // 🔄 ENSURE SERVER STATE SYNC
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: USERS_KEY });
+    },
+  });
+};
