@@ -21,7 +21,7 @@ const TaskFormScreen = () => {
   const { user }: { user: IUser } = useContext(AuthContext);
 
   const taskId = route.params?.taskId;
-  const limit = 10;
+  const limit = 100;
   const offset = 0;
 
   // Fetch tasks if editing
@@ -98,7 +98,8 @@ const TaskFormScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>Title</Text>
+      <Text style={styles.label}>Title {taskId}</Text>
+      {/* <View>{JSON.stringify(tasks, null, 2)}</View> */}
       <TextInput
         style={styles.input}
         value={title}
