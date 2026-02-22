@@ -7,7 +7,14 @@ import { useAuth } from "@/src/core/contexts/AuthContext";
 export const ProfileScreen = () => {
   const { user, signOut } = useAuth();
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "gray",
+      }}
+    >
       <Text variant="titleLarge">Hello {user?.displayName || user?.email}</Text>
       <Button mode="contained" onPress={signOut} style={{ marginTop: 16 }}>
         Log Out
