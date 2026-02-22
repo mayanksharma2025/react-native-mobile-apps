@@ -2,31 +2,43 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SignInScreen } from "@/app/features/auth/screens/SignInScreen";
 import { SignUpScreen } from "@/app/features/auth/screens/SignUpScreen";
 import { ProfileScreen } from "@/app/features/auth/screens/ProfileScreen";
+import { useAuth } from "@/src/core/contexts/AuthContext";
 import { PostsListScreen } from "./features/auth/screens/PostsListScreen";
 import { EditPostScreen } from "./features/auth/screens/EditPostScreen";
-import { useAuth } from "@/src/core/contexts/AuthContext";
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
+/* -------- Bottom Tabs (After Login) -------- */
+const MainTabs = () => {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen name="Posts" component={PostsListScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
+};
+
+/* -------- Root Navigator -------- */
 export const AppNavigator = () => {
   const { user, loading } = useAuth();
 
-  if (loading) return null; // optionally a splash/loading screen
+  if (loading) return null;
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
           <>
-            <Stack.Screen name="Profile" component={ProfileScreen} />
-            <Stack.Screen name="Posts" component={PostsListScreen} />
+            <Stack.Screen name="MainTabs" component={MainTabs} />
             <Stack.Screen
               name="EditPost"
               component={EditPostScreen}
-              options={{ title: "New / Edit Post" }}
+              options={{ headerShown: true, title: "New / Edit Post" }}
             />
           </>
         ) : (
