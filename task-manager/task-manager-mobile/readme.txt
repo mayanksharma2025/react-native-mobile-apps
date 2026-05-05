@@ -49,3 +49,4 @@ npm install @tanstack/react-query
 npm install graphql-request graphql
 npx expo install @react-native-async-storage/async-storage
 
+npx expo start -c // -c for clear cache
