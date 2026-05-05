@@ -69,17 +69,17 @@ export default function RootNavigator() {
     <NavigationContainer>
       <Tab.Navigator screenOptions={{ headerShown: false }}>
         <Tab.Screen
-          name="UsersList"
+          name="UsersList123"
           component={UsersStack}
           options={{ title: 'Users' }}
         />
         <Tab.Screen
-          name="PostsList"
+          name="PostsList123"
           component={PostsStack}
           options={{ title: 'Posts' }}
         />
         <Tab.Screen
-          name="CommentsList"
+          name="CommentsList123"
           component={CommentsStack}
           options={{ title: 'Comments' }}
         />
