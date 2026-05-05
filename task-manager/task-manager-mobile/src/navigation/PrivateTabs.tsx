@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import TasksScreen from "../screens/tasks/TasksScreen";
 import CreateTaskScreen from "../screens/tasks/CreateTaskScreen";
-import { Text, Alert } from "react-native";
+import { Text, Alert, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../context/AuthContext";
@@ -65,7 +65,7 @@ const PrivateTabs: React.FC = () => {
       {/* Logout Tab */}
       <Tab.Screen
         name="Logout"
-        component={() => null}
+        component={View} // ✅ stable component
         listeners={{
           tabPress: async (e) => {
             e.preventDefault();
