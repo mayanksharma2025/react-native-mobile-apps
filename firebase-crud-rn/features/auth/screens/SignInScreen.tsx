@@ -3,9 +3,12 @@ import React, { useState } from "react";
 import { View } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { useAuth } from "@/src/core/contexts/AuthContext";
+import { useRouter } from "expo-router";
 
 export const SignInScreen = ({ navigation }: any) => {
   const { signIn } = useAuth();
+    const router = useRouter();   // ✅
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,6 +18,7 @@ export const SignInScreen = ({ navigation }: any) => {
     try {
       setLoading(true);
       await signIn(email, password);
+       router.replace("/"); 
     } catch (err: any) {
       setError(err.message);
     } finally {

@@ -48,3 +48,17 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+
+
+npm install @react-native-async-storage/async-storage
+
+🔥 Final clean fix (do this exactly)
+1. Remove RN Firebase
+npm uninstall @react-native-firebase/app @react-native-firebase/auth @react-native-firebase/firestore
+2. Install correct Firebase
+npm install firebase@10.12.2
+3. Keep AsyncStorage (already installed ✅)
+4. Update config (as shown above)
+5. Clear cache
+npx expo start -c

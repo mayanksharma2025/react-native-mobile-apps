@@ -2,8 +2,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/src/core/firebase/firebaseConfig";
-import { FirebaseUserRepo } from "@/app/features/auth/repositories/FirebaseUserRepo";
-import { User } from "@/app/features/auth/repositories/IUserRepo";
+import { FirebaseUserRepo } from "@/features/auth/repositories/FirebaseUserRepo";
+import { User } from "@/features/auth/repositories/IUserRepo";
 
 type AuthContextType = {
   user: User | null;

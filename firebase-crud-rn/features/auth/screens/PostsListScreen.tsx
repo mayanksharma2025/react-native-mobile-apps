@@ -1,5 +1,4 @@
-// src/features/posts/screens/PostsListScreen.tsx
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { View, FlatList, Alert } from "react-native";
 import {
   FAB,
@@ -7,25 +6,37 @@ import {
   Title,
   Paragraph,
   Button,
-  IconButton,
   Text,
 } from "react-native-paper";
+import { useFocusEffect, useRouter } from "expo-router";
+
 import { useAuth } from "@/src/core/contexts/AuthContext";
 import { usePosts } from "../hooks/usePosts";
-import { useIsFocused } from "@react-navigation/native";
 import { ProfileScreen } from "./ProfileScreen";
 
-export const PostsListScreen = ({ navigation }: any) => {
+export const PostsListScreen = () => {
+  const router = useRouter(); // ✅ FIX 1
   const { user } = useAuth();
   const { posts, loading, error, loadByAuthor, deletePost } = usePosts();
-  const focused = useIsFocused();
 
-  useEffect(() => {
-    if (user?.id && focused) loadByAuthor(user.id);
-  }, [user?.id, loadByAuthor, focused]);
+  // ✅ FIX 2: removed useIsFocused (React Navigation)
+  // useEffect(() => {
+  //   if (user?.id) {
+  //     loadByAuthor(user.id);
+  //   }
+  // }, [user?.id]);
+
+  useFocusEffect(
+  useCallback(() => {
+    if (user?.id) {
+      loadByAuthor(user.id);
+    }
+  }, [user?.id])
+);
 
   const confirmDelete = (id?: string) => {
     if (!id) return;
+
     Alert.alert("Delete post", "Are you sure you want to delete this post?", [
       { text: "Cancel", style: "cancel" },
       {
@@ -48,13 +59,21 @@ export const PostsListScreen = ({ navigation }: any) => {
         <Title>{item.title}</Title>
         <Paragraph numberOfLines={2}>{item.content}</Paragraph>
       </Card.Content>
+
       <Card.Actions>
+        {/* ✅ FIX 3: correct routing with postId */}
         <Button
-          onPress={() => navigation.navigate("EditPost", { postId: item.id })}
+          onPress={() =>
+            router.push({
+              pathname: "/(protected)/edit-post",
+              params: { postId: item.id },
+            } as any)
+          }
         >
           Edit
         </Button>
-        <Button onPress={() => confirmDelete(item.id)} color="red">
+
+        <Button onPress={() => confirmDelete(item.id)}>
           Delete
         </Button>
       </Card.Actions>
@@ -63,11 +82,12 @@ export const PostsListScreen = ({ navigation }: any) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <ProfileScreen />
+      {/* ✅ FIX 4: removed duplicate ProfileScreen */}
 
       {error ? (
         <Text style={{ color: "red", padding: 16 }}>{error}</Text>
       ) : null}
+
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id!}
@@ -75,7 +95,10 @@ export const PostsListScreen = ({ navigation }: any) => {
         refreshing={loading}
         onRefresh={() => user?.id && loadByAuthor(user.id)}
         contentContainerStyle={{ paddingBottom: 100 }}
+
+        // ✅ keep only one Profile header
         ListHeaderComponent={<ProfileScreen />}
+
         ListEmptyComponent={
           !loading ? (
             <View style={{ padding: 24, alignItems: "center" }}>
@@ -84,9 +107,16 @@ export const PostsListScreen = ({ navigation }: any) => {
           ) : null
         }
       />
+
+      {/* ✅ FIX 5: removed navigation.navigate */}
       <FAB
         icon="plus"
-        onPress={() => navigation.navigate("EditPost", { postId: null })}
+        onPress={() =>
+          router.push({
+            pathname: "/edit-post",
+            params: { postId: "" },
+          } as any)
+        }
         style={{
           position: "absolute",
           right: 16,

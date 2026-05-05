@@ -1,9 +1,9 @@
 // src/core/contexts/ReposProvider.tsx
 import React, { createContext, useContext } from "react";
-import { FirebaseUserRepo } from "@/app/features/auth/repositories/FirebaseUserRepo";
-import { FirebasePostRepo } from "@/app/features/posts/repositories/FirebasePostRepo";
-import type { IUserRepo } from "@/app/features/auth/repositories/IUserRepo";
-import type { IPostRepo } from "@/app/features/posts/repositories/IPostRepo";
+import { FirebaseUserRepo } from "@/features/auth/repositories/FirebaseUserRepo";
+import { FirebasePostRepo } from "@/features/posts/repositories/FirebasePostRepo";
+import type { IUserRepo } from "@/features/auth/repositories/IUserRepo";
+import type { IPostRepo } from "@/features/posts/repositories/IPostRepo";
 
 type ReposContextType = {
   userRepo: IUserRepo;
