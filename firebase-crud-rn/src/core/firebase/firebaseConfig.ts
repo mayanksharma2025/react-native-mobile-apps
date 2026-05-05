@@ -14,7 +14,7 @@ const firebaseConfig = {
 const app =
   getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-let auth;
+let auth : any;
 
 try {
   const { getReactNativePersistence } = require("firebase/auth");
