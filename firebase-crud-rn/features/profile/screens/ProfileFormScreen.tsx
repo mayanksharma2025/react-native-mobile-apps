@@ -14,7 +14,7 @@ import {
 
 import * as ImagePicker from "expo-image-picker";
 
-import { auth } from "@/src/core/firebase/firebaseConfig";
+import { auth, db } from "@/src/core/firebase/firebaseConfig";
 
 import {
   updateProfile,
@@ -22,24 +22,25 @@ import {
   updatePassword,
   EmailAuthProvider,
   reauthenticateWithCredential,
+  reload,
 } from "firebase/auth";
 
-import { ProfileRepository } from "../repositories/ProfileRepository";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+
+import { storage } from "@/src/core/firebase/firebaseConfig";
 
 import { Category } from "../types";
 
-const repo = new ProfileRepository();
+/* ------------------------------------------------ */
 
 export const ProfileFormScreen = () => {
-  const user = auth.currentUser;
-
-  /* ---------------- STATES ---------------- */
-
   const [loading, setLoading] = useState(false);
 
-  const [name, setName] = useState(user?.displayName || "");
+  const [name, setName] = useState("");
 
-  const [email, setEmail] = useState(user?.email || "");
+  const [email, setEmail] = useState("");
 
   const [currentPassword, setCurrentPassword] = useState("");
 
@@ -71,69 +72,72 @@ export const ProfileFormScreen = () => {
     },
   ]);
 
-  /* ---------------- LOAD PROFILE ---------------- */
+  /* ------------------------------------------------ */
+  /* LOAD PROFILE */
+  /* ------------------------------------------------ */
 
   useEffect(() => {
-    const loadProfile = async () => {
-      if (!user) return;
-
-      try {
-        const profile = await repo.getProfile(user.uid);
-
-        if (!profile) return;
-
-        setName(profile.name || "");
-
-        setEmail(profile.email || "");
-
-        setAddress(profile.address || "");
-
-        setCategory(profile.category || Category.Developer);
-
-        setWorking(profile.working ?? true);
-
-        setSkills(profile.skills || []);
-
-        setEducations(
-          profile.educations || [
-            {
-              school: "",
-              degree: "",
-            },
-          ],
-        );
-
-        setExperiences(
-          profile.experiences || [
-            {
-              company: "",
-              role: "",
-            },
-          ],
-        );
-
-        if (profile.photoUrl) {
-          setPhoto(profile.photoUrl);
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    };
-
     loadProfile();
   }, []);
 
-  /* ---------------- SKILLS ---------------- */
+  const loadProfile = async () => {
+    try {
+      const user = auth.currentUser;
 
-  const toggleSkill = (skill: string) => {
-    if (skills.includes(skill)) {
-      setSkills(skills.filter((s) => s !== skill));
-    } else {
-      setSkills([...skills, skill]);
+      if (!user) return;
+
+      /* ALWAYS REFRESH USER */
+      await reload(user);
+
+      const currentUser = auth.currentUser;
+
+      setName(currentUser?.displayName || "");
+
+      setEmail(currentUser?.email || "");
+
+      const docRef = doc(db, "users", user.uid);
+
+      const snap = await getDoc(docRef);
+
+      if (!snap.exists()) return;
+
+      const data = snap.data();
+
+      setAddress(data.address || "");
+
+      setCategory(data.category || Category.Developer);
+
+      setWorking(data.working ?? true);
+
+      setSkills(data.skills || []);
+
+      setEducations(
+        data.educations || [
+          {
+            school: "",
+            degree: "",
+          },
+        ],
+      );
+
+      setExperiences(
+        data.experiences || [
+          {
+            company: "",
+            role: "",
+          },
+        ],
+      );
+
+      setPhoto(data.photoUrl || "");
+    } catch (e) {
+      console.log(e);
     }
   };
 
-  /* ---------------- IMAGE PICKER ---------------- */
+  /* ------------------------------------------------ */
+  /* IMAGE PICKER */
+  /* ------------------------------------------------ */
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -146,13 +150,29 @@ export const ProfileFormScreen = () => {
     }
   };
 
-  /* ---------------- SAVE PROFILE ---------------- */
+  /* ------------------------------------------------ */
+  /* TOGGLE SKILLS */
+  /* ------------------------------------------------ */
+
+  const toggleSkill = (skill: string) => {
+    if (skills.includes(skill)) {
+      setSkills(skills.filter((s) => s !== skill));
+    } else {
+      setSkills([...skills, skill]);
+    }
+  };
+
+  /* ------------------------------------------------ */
+  /* SAVE PROFILE */
+  /* ------------------------------------------------ */
 
   const saveProfile = async () => {
     try {
-      if (!user) return;
-
       setLoading(true);
+
+      const user = auth.currentUser;
+
+      if (!user) return;
 
       /* PASSWORD VALIDATION */
 
@@ -162,23 +182,7 @@ export const ProfileFormScreen = () => {
         return;
       }
 
-      /* IMAGE UPLOAD */
-
-      let photoUrl = photo;
-
-      if (photo && !photo.startsWith("https")) {
-        photoUrl = await repo.uploadProfilePhoto(photo, user.uid);
-      }
-
-      /* UPDATE DISPLAY NAME */
-
-      if (name !== user.displayName) {
-        await updateProfile(user, {
-          displayName: name,
-        });
-      }
-
-      /* REAUTHENTICATION */
+      /* REAUTH */
 
       const needsReAuth = email !== user.email || !!password;
 
@@ -197,6 +201,12 @@ export const ProfileFormScreen = () => {
         await reauthenticateWithCredential(user, credential);
       }
 
+      /* UPDATE DISPLAY NAME */
+
+      await updateProfile(user, {
+        displayName: name,
+      });
+
       /* UPDATE EMAIL */
 
       if (email !== user.email) {
@@ -209,28 +219,71 @@ export const ProfileFormScreen = () => {
         await updatePassword(user, password);
       }
 
-      /* SAVE FIRESTORE PROFILE */
+      /* REFRESH USER */
 
-      await repo.saveProfile({
-        id: user.uid,
-        name,
-        email,
-        address,
-        photoUrl,
-        category,
-        working,
-        skills,
-        educations,
-        experiences,
-      });
+      await reload(user);
 
-      Alert.alert("Success", "Profile updated successfully");
+      const updatedUser = auth.currentUser;
+
+      /* IMAGE UPLOAD */
+
+      let photoUrl = photo;
+
+      if (photo && !photo.startsWith("https")) {
+        const response = await fetch(photo);
+
+        const blob = await response.blob();
+
+        const storageRef = ref(storage, `profiles/${user.uid}`);
+
+        await uploadBytes(storageRef, blob);
+
+        photoUrl = await getDownloadURL(storageRef);
+      }
+
+      /* SAVE FIRESTORE */
+
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          id: user.uid,
+
+          name: updatedUser?.displayName || "",
+
+          email: updatedUser?.email || "",
+
+          address,
+
+          photoUrl,
+
+          category,
+
+          working,
+
+          skills,
+
+          educations,
+
+          experiences,
+
+          updatedAt: serverTimestamp(),
+        },
+        {
+          merge: true,
+        },
+      );
+
+      /* REFRESH SCREEN */
+
+      await loadProfile();
 
       /* CLEAR PASSWORDS */
 
       setCurrentPassword("");
       setPassword("");
       setConfirmPassword("");
+
+      Alert.alert("Success", "Profile updated successfully");
     } catch (e: any) {
       console.log(e);
 
@@ -240,7 +293,9 @@ export const ProfileFormScreen = () => {
     }
   };
 
-  /* ---------------- UI ---------------- */
+  /* ------------------------------------------------ */
+  /* UI */
+  /* ------------------------------------------------ */
 
   return (
     <ScrollView
@@ -249,10 +304,10 @@ export const ProfileFormScreen = () => {
         gap: 12,
       }}
     >
-      {/* USER ID */}
-      <Text variant="bodySmall">UID: {user?.uid}</Text>
+      <Text variant="bodySmall">UID: {auth.currentUser?.uid}</Text>
 
-      {/* PROFILE PHOTO */}
+      {/* PHOTO */}
+
       <Button mode="outlined" onPress={pickImage}>
         Pick Profile Photo
       </Button>
@@ -270,17 +325,21 @@ export const ProfileFormScreen = () => {
       )}
 
       {/* NAME */}
+
       <TextInput label="Name" value={name} onChangeText={setName} />
 
       {/* EMAIL */}
+
       <TextInput
         label="Email"
         value={email}
+        disabled
         keyboardType="email-address"
         onChangeText={setEmail}
       />
 
       {/* CURRENT PASSWORD */}
+
       <TextInput
         label="Current Password"
         value={currentPassword}
@@ -289,6 +348,7 @@ export const ProfileFormScreen = () => {
       />
 
       {/* NEW PASSWORD */}
+
       <TextInput
         label="New Password"
         value={password}
@@ -297,6 +357,7 @@ export const ProfileFormScreen = () => {
       />
 
       {/* CONFIRM PASSWORD */}
+
       <TextInput
         label="Confirm Password"
         value={confirmPassword}
@@ -305,9 +366,11 @@ export const ProfileFormScreen = () => {
       />
 
       {/* ADDRESS */}
+
       <TextInput label="Address" value={address} onChangeText={setAddress} />
 
       {/* CATEGORY */}
+
       <Text variant="titleMedium">Category</Text>
 
       <RadioButton.Group
@@ -322,6 +385,7 @@ export const ProfileFormScreen = () => {
       </RadioButton.Group>
 
       {/* WORKING */}
+
       <Checkbox.Item
         label="Currently Working"
         status={working ? "checked" : "unchecked"}
@@ -329,27 +393,20 @@ export const ProfileFormScreen = () => {
       />
 
       {/* SKILLS */}
+
       <Text variant="titleMedium">Skills</Text>
 
-      <Checkbox.Item
-        label="React Native"
-        status={skills.includes("React Native") ? "checked" : "unchecked"}
-        onPress={() => toggleSkill("React Native")}
-      />
-
-      <Checkbox.Item
-        label="Firebase"
-        status={skills.includes("Firebase") ? "checked" : "unchecked"}
-        onPress={() => toggleSkill("Firebase")}
-      />
-
-      <Checkbox.Item
-        label="TypeScript"
-        status={skills.includes("TypeScript") ? "checked" : "unchecked"}
-        onPress={() => toggleSkill("TypeScript")}
-      />
+      {["React Native", "Firebase", "TypeScript"].map((skill) => (
+        <Checkbox.Item
+          key={skill}
+          label={skill}
+          status={skills.includes(skill) ? "checked" : "unchecked"}
+          onPress={() => toggleSkill(skill)}
+        />
+      ))}
 
       {/* EDUCATION */}
+
       <Text variant="titleMedium">Education</Text>
 
       {educations.map((edu, index) => (
@@ -395,6 +452,7 @@ export const ProfileFormScreen = () => {
       </Button>
 
       {/* EXPERIENCE */}
+
       <Text variant="titleMedium">Experience</Text>
 
       {experiences.map((exp, index) => (
@@ -439,7 +497,8 @@ export const ProfileFormScreen = () => {
         Add Experience
       </Button>
 
-      {/* SAVE BUTTON */}
+      {/* SAVE */}
+
       <Button
         mode="contained"
         loading={loading}
