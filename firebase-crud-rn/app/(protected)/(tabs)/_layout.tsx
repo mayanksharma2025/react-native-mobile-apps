@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { ProfileFormScreen } from "@/features/profile/screens/ProfileFormScreen";
 
 export default function TabsLayout() {
   return (
@@ -31,6 +32,15 @@ export default function TabsLayout() {
           title: "Settings",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" color={color} size={size} />
           ),
         }}
       />
