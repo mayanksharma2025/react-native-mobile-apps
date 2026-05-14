@@ -1,13 +1,6 @@
 import React, { useCallback, useEffect } from "react";
 import { View, FlatList, Alert } from "react-native";
-import {
-  FAB,
-  Card,
-  Title,
-  Paragraph,
-  Button,
-  Text,
-} from "react-native-paper";
+import { FAB, Card, Title, Paragraph, Button, Text } from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 
 import { useAuth } from "@/src/core/contexts/AuthContext";
@@ -27,12 +20,12 @@ export const PostsListScreen = () => {
   // }, [user?.id]);
 
   useFocusEffect(
-  useCallback(() => {
-    if (user?.id) {
-      loadByAuthor(user.id);
-    }
-  }, [user?.id])
-);
+    useCallback(() => {
+      if (user?.id) {
+        loadByAuthor(user.id);
+      }
+    }, [user?.id]),
+  );
 
   const confirmDelete = (id?: string) => {
     if (!id) return;
@@ -73,9 +66,7 @@ export const PostsListScreen = () => {
           Edit
         </Button>
 
-        <Button onPress={() => confirmDelete(item.id)}>
-          Delete
-        </Button>
+        <Button onPress={() => confirmDelete(item.id)}>Delete</Button>
       </Card.Actions>
     </Card>
   );
@@ -95,10 +86,8 @@ export const PostsListScreen = () => {
         refreshing={loading}
         onRefresh={() => user?.id && loadByAuthor(user.id)}
         contentContainerStyle={{ paddingBottom: 100 }}
-
         // ✅ keep only one Profile header
         ListHeaderComponent={<ProfileScreen />}
-
         ListEmptyComponent={
           !loading ? (
             <View style={{ padding: 24, alignItems: "center" }}>

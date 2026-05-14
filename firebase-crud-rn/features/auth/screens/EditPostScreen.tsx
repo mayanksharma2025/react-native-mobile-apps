@@ -1,126 +1,179 @@
 import React, { useEffect, useState } from "react";
-import { View, KeyboardAvoidingView, Platform, Alert } from "react-native";
-import { TextInput, Button } from "react-native-paper";
-import { usePosts } from "../hooks/usePosts";
-import { useAuth } from "@/src/core/contexts/AuthContext";
+import { ScrollView, View, Alert } from "react-native";
+import { TextInput, Button, Text, Switch } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-type Params = {
-  postId?: string | string[];
-};
+import { useAuth } from "@/src/core/contexts/AuthContext";
+import { usePosts } from "../hooks/usePosts";
+import { FirebaseLinkRepo } from "@/features/links/repositories/FirebaseLinkRepo";
 
-export const EditPostScreen: React.FC = () => {
+const linkRepo = new FirebaseLinkRepo();
+
+export const EditPostScreen = () => {
   const router = useRouter();
-
-  const { postId } = useLocalSearchParams<Params>();
-  const id = Array.isArray(postId) ? postId[0] : postId;
-
   const { user } = useAuth();
+  const { postId } = useLocalSearchParams<any>();
+
+  const id = typeof postId === "string" ? postId : postId?.[0];
+  const isEdit = !!id;
+
   const { getById, createPost, updatePost } = usePosts();
 
-  const [title, setTitle] = useState<string>("");
-  const [content, setContent] = useState<string>("");
-  const [isPublic, setIsPublic] = useState<boolean>(true);
-  const [saving, setSaving] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
-  // Load post if editing
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
+
+  const [links, setLinks] = useState([{ label: "", url: "" }]);
+
+  // ---------------- LOAD POST ----------------
   useEffect(() => {
-    if (!id) return;
+    if (!isEdit || !id) return;
 
     (async () => {
       try {
-        const p = await getById(id);
-        if (p) {
-          setTitle(p.title);
-          setContent(p.content);
-          setIsPublic(p.isPublic ?? true);
+        const post = await getById(id);
+
+        if (post) {
+          setTitle(post.title);
+          setContent(post.content);
+          setIsPublic(post.isPublic);
         }
+
+        const existingLinks = await linkRepo.getByPosts([id]);
+
+        setLinks(
+          existingLinks.length
+            ? existingLinks.map((l: any) => ({
+                label: l.label ?? "",
+                url: l.url ?? "",
+              }))
+            : [{ label: "", url: "" }],
+        );
       } catch (e: any) {
-        Alert.alert("Error", e.message || "Failed to load post");
+        Alert.alert("Error", e.message);
       }
     })();
   }, [id]);
 
-  const handleSave = async () => {
-    if (!user?.id) {
-      Alert.alert("Not signed in");
-      return;
-    }
-
-    if (!title.trim()) {
-      Alert.alert("Validation", "Title is required");
-      return;
-    }
-
+  // ---------------- SAVE ----------------
+  const savePost = async () => {
     try {
-      setSaving(true);
+      if (!user) return;
 
-      if (id) {
-        await updatePost(id, {
-          title: title.trim(),
-          content: content.trim(),
-          isPublic,
-        });
-      } else {
-        await createPost({
+      setLoading(true);
+
+      let postId = id;
+
+      // CREATE
+      if (!isEdit) {
+        const created = await createPost({
+          title,
+          content,
           authorId: user.id,
-          title: title.trim(),
-          content: content.trim(),
           isPublic,
         });
+
+        postId = created.id;
+
+        for (const l of links) {
+          if (!l.url.trim()) continue;
+
+          await linkRepo.create({
+            postId,
+            label: l.label,
+            url: l.url,
+          });
+        }
+
+        Alert.alert("Success", "Post created");
       }
 
-      router.back(); // ✅ FIX: replaces navigation.goBack()
+      // UPDATE
+      else {
+        if (!postId) return;
+
+        await updatePost(postId, {
+          title,
+          content,
+          isPublic,
+        });
+
+        // 🔥 IMPORTANT FIX: DELETE OLD LINKS FIRST
+        await linkRepo.deleteByPost(postId);
+
+        // THEN RECREATE CLEAN STATE
+        for (const l of links) {
+          if (!l.url.trim()) continue;
+
+          await linkRepo.create({
+            postId,
+            label: l.label,
+            url: l.url,
+          });
+        }
+
+        Alert.alert("Success", "Post updated");
+      }
+
+      router.back();
     } catch (e: any) {
-      Alert.alert("Error", e.message || "Failed to save");
+      Alert.alert("Error", e.message || "Save failed");
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
+  const updateLink = (i: number, key: "label" | "url", value: string) => {
+    const copy = [...links];
+    copy[i][key] = value;
+    setLinks(copy);
+  };
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      style={{ flex: 1, padding: 16 }}
-    >
-      <View style={{ flex: 1 }}>
-        <TextInput
-          label="Title"
-          value={title}
-          onChangeText={setTitle}
-          style={{ marginBottom: 12 }}
-        />
+    <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+      <Text variant="titleLarge">{isEdit ? "Edit Post" : "Create Post"}</Text>
 
-        <TextInput
-          label="Content"
-          value={content}
-          onChangeText={setContent}
-          multiline
-          numberOfLines={6}
-          style={{ marginBottom: 12, minHeight: 120 }}
-        />
+      <TextInput label="Title" value={title} onChangeText={setTitle} />
 
-        <Button
-          mode={isPublic ? "contained" : "outlined"}
-          onPress={() => setIsPublic((prev) => !prev)}
-          style={{ marginBottom: 12 }}
-        >
-          {isPublic ? "Public" : "Private"}
-        </Button>
+      <TextInput
+        label="Content"
+        value={content}
+        onChangeText={setContent}
+        multiline
+      />
 
-        <Button
-          mode="contained"
-          onPress={handleSave}
-          loading={saving}
-          disabled={saving}
-        >
-          {id ? "Update Post" : "Create Post"}
-        </Button>
-
-        <Button onPress={() => router.back()} style={{ marginTop: 8 }}>
-          Cancel
-        </Button>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <Text>Public</Text>
+        <Switch value={isPublic} onValueChange={setIsPublic} />
       </View>
-    </KeyboardAvoidingView>
+
+      <Text variant="titleMedium">Links</Text>
+
+      {links.map((l, i) => (
+        <View key={i} style={{ gap: 8 }}>
+          <TextInput
+            label="Label"
+            value={l.label}
+            onChangeText={(v) => updateLink(i, "label", v)}
+          />
+
+          <TextInput
+            label="URL"
+            value={l.url}
+            onChangeText={(v) => updateLink(i, "url", v)}
+          />
+        </View>
+      ))}
+
+      <Button onPress={() => setLinks([...links, { label: "", url: "" }])}>
+        Add Link
+      </Button>
+
+      <Button mode="contained" loading={loading} onPress={savePost}>
+        Save
+      </Button>
+    </ScrollView>
   );
 };

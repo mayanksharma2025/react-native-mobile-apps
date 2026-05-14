@@ -1,76 +1,96 @@
-// src/features/posts/repositories/FirebasePostRepo.ts
-import { IPostRepo, Post } from "./IPostRepo";
-import { db } from "@/src/core/firebase/firebaseConfig";
 import {
-  collection,
   addDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  serverTimestamp,
   doc,
   getDoc,
   updateDoc,
   deleteDoc,
-  query,
-  where,
-  orderBy,
-  getDocs,
-  serverTimestamp,
 } from "firebase/firestore";
 
-const POSTS_COLL = "posts";
+import { db } from "@/src/core/firebase/firebaseConfig";
+// import { CreatePostDto } from "./IPostRepo";
+import { Post, CreatePostDto, UpdatePostDto } from "./IPostRepo";
 
-export class FirebasePostRepo implements IPostRepo {
-  async create(
-    post: Omit<Post, "id" | "createdAt" | "updatedAt">,
-  ): Promise<Post> {
-    const payload: any = {
-      ...post,
+export class FirebasePostRepo {
+  async create(data: CreatePostDto): Promise<Post> {
+    const docRef = await addDoc(collection(db, "posts"), {
+      ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    return {
+      id: docRef.id,
+      ...data,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      isPublic: post.isPublic ?? true,
-    };
-    const ref = await addDoc(collection(db, POSTS_COLL), payload);
-    return { id: ref.id, ...payload } as Post;
+    } as Post;
   }
 
-  async getById(id: string): Promise<Post | null> {
-    const ref = doc(db, POSTS_COLL, id);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return null;
-    const data = snap.data() as any;
-    return { id: snap.id, ...data } as Post;
-  }
+  async list(): Promise<Post[]> {
+    const snap = await getDocs(collection(db, "posts"));
 
-  async update(id: string, data: Partial<Post>): Promise<Post> {
-    const ref = doc(db, POSTS_COLL, id);
-    const payload: any = {
-      ...data,
-      updatedAt: Date.now(),
-    };
-    await updateDoc(ref, payload);
-    const snap = await getDoc(ref);
-    return { id: snap.id, ...(snap.data() as any) } as Post;
-  }
-
-  async delete(id: string): Promise<void> {
-    await deleteDoc(doc(db, POSTS_COLL, id));
+    return snap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Post[];
   }
 
   async listByAuthor(authorId: string): Promise<Post[]> {
-    const q = query(
-      collection(db, POSTS_COLL),
-      where("authorId", "==", authorId),
-      orderBy("createdAt", "desc"),
-    );
-    const snaps = await getDocs(q);
-    return snaps.docs.map((d) => ({ id: d.id, ...(d.data() as any) }) as Post);
+    const q = query(collection(db, "posts"), where("authorId", "==", authorId));
+
+    const snap = await getDocs(q);
+
+    return snap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Post[];
+  }
+
+  async getById(id: string): Promise<Post | null> {
+    const ref = doc(db, "posts", id);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) return null;
+
+    return {
+      id: snap.id,
+      ...snap.data(),
+    } as Post;
+  }
+
+  async update(id: string, data: UpdatePostDto): Promise<Post> {
+    const ref = doc(db, "posts", id);
+
+    await updateDoc(ref, {
+      ...data,
+      updatedAt: serverTimestamp(),
+    });
+
+    const updated = await getDoc(ref);
+
+    return {
+      id: updated.id,
+      ...updated.data(),
+    } as Post;
+  }
+
+  async delete(id: string): Promise<void> {
+    await deleteDoc(doc(db, "posts", id));
   }
 
   async listAllPublic(): Promise<Post[]> {
-    const q = query(
-      collection(db, POSTS_COLL),
-      where("isPublic", "==", true),
-      orderBy("createdAt", "desc"),
-    );
-    const snaps = await getDocs(q);
-    return snaps.docs.map((d) => ({ id: d.id, ...(d.data() as any) }) as Post);
+    const q = query(collection(db, "posts"), where("isPublic", "==", true));
+
+    const snap = await getDocs(q);
+
+    return snap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Post[];
   }
 }
