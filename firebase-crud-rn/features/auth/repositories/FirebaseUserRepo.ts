@@ -33,8 +33,6 @@ export class FirebaseUserRepo implements IUserRepo {
       displayName: displayName || "",
     };
 
-    console.log(user);
-
     await setDoc(doc(db, "users", user.id), user);
 
     return user;

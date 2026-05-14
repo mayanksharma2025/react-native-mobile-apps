@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 
 export const SignInScreen = ({ navigation }: any) => {
   const { signIn } = useAuth();
-    const router = useRouter();   // ✅
+  const router = useRouter(); // ✅
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,7 +18,7 @@ export const SignInScreen = ({ navigation }: any) => {
     try {
       setLoading(true);
       await signIn(email, password);
-       router.replace("/"); 
+      router.replace("/");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -54,9 +54,7 @@ export const SignInScreen = ({ navigation }: any) => {
       <Button mode="contained" onPress={handleSignIn} loading={loading}>
         Sign In
       </Button>
-      <Button onPress={() => navigation.navigate("SignUp")}>
-        Create Account
-      </Button>
+      <Button onPress={() => router.push("/sign-up")}>Create Account</Button>
     </View>
   );
 };

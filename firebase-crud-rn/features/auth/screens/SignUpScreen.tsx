@@ -3,9 +3,11 @@ import React, { useState } from "react";
 import { View } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { useAuth } from "@/src/core/contexts/AuthContext";
+import { useRouter } from "expo-router";
 
 export const SignUpScreen = ({ navigation }: any) => {
   const { signUp } = useAuth();
+  const router = useRouter(); // ✅
   const [displayName, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPass] = useState("");
@@ -14,6 +16,7 @@ export const SignUpScreen = ({ navigation }: any) => {
   const handleSignUp = async () => {
     try {
       await signUp(email, password, displayName);
+      router.replace("/");
     } catch (err: any) {
       setError(err.message);
     }
@@ -52,7 +55,7 @@ export const SignUpScreen = ({ navigation }: any) => {
       <Button mode="contained" onPress={handleSignUp}>
         Sign Up
       </Button>
-      <Button onPress={() => navigation.goBack()}>Back to Sign In</Button>
+      <Button onPress={() => router.back()}>Back to Sign In</Button>
     </View>
   );
 };
