@@ -16,7 +16,13 @@ import * as ImagePicker from "expo-image-picker";
 
 import { auth } from "@/src/core/firebase/firebaseConfig";
 
-import { updateProfile } from "firebase/auth";
+import {
+  updateProfile,
+  updateEmail,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+} from "firebase/auth";
 
 import { ProfileRepository } from "../repositories/ProfileRepository";
 
@@ -34,6 +40,12 @@ export const ProfileFormScreen = () => {
   const [name, setName] = useState(user?.displayName || "");
 
   const [email, setEmail] = useState(user?.email || "");
+
+  const [currentPassword, setCurrentPassword] = useState("");
+
+  const [password, setPassword] = useState("");
+
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [address, setAddress] = useState("");
 
@@ -142,19 +154,63 @@ export const ProfileFormScreen = () => {
 
       setLoading(true);
 
+      /* PASSWORD VALIDATION */
+
+      if (password && password !== confirmPassword) {
+        Alert.alert("Error", "Passwords do not match");
+
+        return;
+      }
+
+      /* IMAGE UPLOAD */
+
       let photoUrl = photo;
 
-      /* upload only local file */
       if (photo && !photo.startsWith("https")) {
         photoUrl = await repo.uploadProfilePhoto(photo, user.uid);
       }
 
-      /* update firebase auth profile */
-      await updateProfile(user, {
-        displayName: name,
-      });
+      /* UPDATE DISPLAY NAME */
 
-      /* save firestore profile */
+      if (name !== user.displayName) {
+        await updateProfile(user, {
+          displayName: name,
+        });
+      }
+
+      /* REAUTHENTICATION */
+
+      const needsReAuth = email !== user.email || !!password;
+
+      if (needsReAuth) {
+        if (!currentPassword) {
+          Alert.alert("Error", "Current password required");
+
+          return;
+        }
+
+        const credential = EmailAuthProvider.credential(
+          user.email || "",
+          currentPassword,
+        );
+
+        await reauthenticateWithCredential(user, credential);
+      }
+
+      /* UPDATE EMAIL */
+
+      if (email !== user.email) {
+        await updateEmail(user, email);
+      }
+
+      /* UPDATE PASSWORD */
+
+      if (password) {
+        await updatePassword(user, password);
+      }
+
+      /* SAVE FIRESTORE PROFILE */
+
       await repo.saveProfile({
         id: user.uid,
         name,
@@ -168,7 +224,13 @@ export const ProfileFormScreen = () => {
         experiences,
       });
 
-      Alert.alert("Success", "Profile saved successfully");
+      Alert.alert("Success", "Profile updated successfully");
+
+      /* CLEAR PASSWORDS */
+
+      setCurrentPassword("");
+      setPassword("");
+      setConfirmPassword("");
     } catch (e: any) {
       console.log(e);
 
@@ -187,10 +249,10 @@ export const ProfileFormScreen = () => {
         gap: 12,
       }}
     >
-      {/* USER DEBUG */}
+      {/* USER ID */}
       <Text variant="bodySmall">UID: {user?.uid}</Text>
 
-      {/* IMAGE */}
+      {/* PROFILE PHOTO */}
       <Button mode="outlined" onPress={pickImage}>
         Pick Profile Photo
       </Button>
@@ -211,7 +273,36 @@ export const ProfileFormScreen = () => {
       <TextInput label="Name" value={name} onChangeText={setName} />
 
       {/* EMAIL */}
-      <TextInput label="Email" value={email} disabled />
+      <TextInput
+        label="Email"
+        value={email}
+        keyboardType="email-address"
+        onChangeText={setEmail}
+      />
+
+      {/* CURRENT PASSWORD */}
+      <TextInput
+        label="Current Password"
+        value={currentPassword}
+        secureTextEntry
+        onChangeText={setCurrentPassword}
+      />
+
+      {/* NEW PASSWORD */}
+      <TextInput
+        label="New Password"
+        value={password}
+        secureTextEntry
+        onChangeText={setPassword}
+      />
+
+      {/* CONFIRM PASSWORD */}
+      <TextInput
+        label="Confirm Password"
+        value={confirmPassword}
+        secureTextEntry
+        onChangeText={setConfirmPassword}
+      />
 
       {/* ADDRESS */}
       <TextInput label="Address" value={address} onChangeText={setAddress} />
@@ -348,7 +439,7 @@ export const ProfileFormScreen = () => {
         Add Experience
       </Button>
 
-      {/* SAVE */}
+      {/* SAVE BUTTON */}
       <Button
         mode="contained"
         loading={loading}
