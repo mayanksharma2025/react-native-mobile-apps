@@ -37,6 +37,13 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
+        name="link/[id]"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
         name="settings"
         options={{
           title: "Settings",

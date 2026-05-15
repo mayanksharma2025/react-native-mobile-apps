@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { ScrollView } from "react-native";
+import { router } from "expo-router";
 
 import { Checkbox, Text, Card, Button } from "react-native-paper";
 
@@ -72,7 +73,21 @@ export const LinksScreen = () => {
           <Card.Title title={link.label} subtitle={link.url} />
 
           <Card.Actions>
-            <Button onPress={() => Linking.openURL(link.url)}>Open</Button>
+            {/* <Button onPress={() => Linking.openURL(link.url)}>Open</Button> */}
+            <Button onPress={() => router.back()}>Back</Button>
+            <Button
+              onPress={() =>
+                router.push({
+                  pathname: "/link/[id]",
+
+                  params: {
+                    id: link.id,
+                  },
+                })
+              }
+            >
+              View
+            </Button>
           </Card.Actions>
         </Card>
       ))}

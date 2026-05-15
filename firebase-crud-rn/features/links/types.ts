@@ -9,3 +9,4 @@ export interface PostLink {
 
   createdAt?: any;
 }
+
