@@ -29,8 +29,10 @@ export const ReportDetailsScreen = () => {
   const [report, setReport] = useState<any>(null);
 
   useEffect(() => {
-    loadReport();
-  }, []);
+    if (id) {
+      loadReport();
+    }
+  }, [id]);
 
   //   const loadReport = async () => {
   //     const data = await repo.getById(id as string);
