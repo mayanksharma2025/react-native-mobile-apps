@@ -15,13 +15,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, router } from "expo-router";
 
 import { FirebaseReportRepo } from "../repositories/FirebaseReportRepo";
+import { FirebasePostRepo } from "@/features/posts/repositories/FirebasePostRepo";
 
 const repo = new FirebaseReportRepo();
+const postRepo = new FirebasePostRepo();
 
 export const ReportDetailsScreen = () => {
   const params = useLocalSearchParams();
 
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const [selectedPosts, setSelectedPosts] = useState<any[]>([]);
 
   const [report, setReport] = useState<any>(null);
 
@@ -29,10 +32,26 @@ export const ReportDetailsScreen = () => {
     loadReport();
   }, []);
 
+  //   const loadReport = async () => {
+  //     const data = await repo.getById(id as string);
+
+  //     setReport(data);
+  //   };
+
   const loadReport = async () => {
     const data = await repo.getById(id as string);
 
     setReport(data);
+
+    if (data?.selectedPostIds?.length) {
+      const allPosts = await postRepo.list();
+
+      const matched = allPosts.filter((post) =>
+        data.selectedPostIds.includes(post.id),
+      );
+
+      setSelectedPosts(matched);
+    }
   };
 
   if (!report) {
@@ -91,14 +110,45 @@ export const ReportDetailsScreen = () => {
       >
         <Card.Content>
           <Text variant="headlineSmall">{report.reportName}</Text>
+          <Card
+            style={{
+              borderRadius: 24,
+              marginTop: 16,
+            }}
+          >
+            <Card.Content>
+              <Text variant="titleMedium">Selected Posts</Text>
 
+              <Divider
+                style={{
+                  marginVertical: 14,
+                }}
+              />
+
+              {selectedPosts.length ? (
+                selectedPosts.map((post) => (
+                  <Chip
+                    key={post.id}
+                    style={{
+                      marginBottom: 10,
+                    }}
+                    icon="file-document-outline"
+                  >
+                    {post.title}
+                  </Chip>
+                ))
+              ) : (
+                <Text>No selected posts</Text>
+              )}
+            </Card.Content>
+          </Card>
           <Text
             style={{
-              marginTop: 6,
+              marginTop: 18,
               opacity: 0.7,
             }}
           >
-            {report.phoneNumber}
+            Phone Number: {report.phoneNumber}
           </Text>
 
           <View
