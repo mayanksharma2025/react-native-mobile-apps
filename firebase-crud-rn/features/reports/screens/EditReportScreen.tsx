@@ -59,8 +59,8 @@ export const EditReportScreen = () => {
   useEffect(() => {
     if (editId) {
       loadReport();
-      loadPosts();
     }
+    loadPosts();
   }, [editId]);
 
   const loadPosts = async () => {
