@@ -107,6 +107,8 @@ export const EditReportScreen = () => {
 
       setSelected(data.selectedPostIds || []);
 
+      setSelectedPosts(data.selectedPostIds || []);
+
       setVisaReports(
         (data.visaReports || []).map((url: string) => ({
           uri: url,
@@ -327,13 +329,9 @@ export const EditReportScreen = () => {
 
               <PaperSelect
                 label="Select Posts"
-                value={selectedPosts
-                  .map((id) => {
-                    const post = posts.find((x) => x.id === id);
-
-                    return post?.title;
-                  })
-                  .filter(Boolean)
+                value={postList
+                  .filter((item) => selectedPosts.includes(item._id))
+                  .map((item) => item.value)
                   .join(", ")}
                 arrayList={postList.map((item) => ({
                   ...item,
@@ -344,12 +342,22 @@ export const EditReportScreen = () => {
                 )}
                 multiEnable={true}
                 onSelection={(value: any) => {
-                  setSelectedPosts(
-                    value.selectedArrayList.map((item: any) => item._id),
-                  );
+                  const items =
+                    value?.selectedList || value?.selectedArrayList || [];
+
+                  setSelectedPosts(items.map((item: any) => item._id));
                 }}
                 dialogTitle="Select Posts"
                 textInputMode="outlined"
+                // textInputBackgroundColor="#FFFFFF"
+                // textInputColor="#111827"
+                // selectedChipBackgroundColor="#2563EB"
+                // selectedChipTextStyle={{
+                //   color: "white",
+                // }}
+                checkboxProps={{
+                  checkboxColor: "#2563EB",
+                }}
               />
             </Card.Content>
           </Card>
