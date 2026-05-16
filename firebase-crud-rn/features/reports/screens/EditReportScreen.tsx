@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, View, Image, Alert, TouchableOpacity } from "react-native";
 
 import { AutocompleteDropdown } from "react-native-autocomplete-dropdown";
+import { PaperSelect } from "react-native-paper-select";
 
 import {
   TextInput,
@@ -52,6 +53,10 @@ export const EditReportScreen = () => {
 
   const [posts, setPosts] = useState<any[]>([]);
 
+  const [postList, setPostList] = useState<any[]>([]);
+
+  const [selectedPosts, setSelectedPosts] = useState<any[]>([]);
+
   const [selected, setSelected] = useState<string[]>([]);
 
   const postRepo = new FirebasePostRepo();
@@ -67,6 +72,13 @@ export const EditReportScreen = () => {
     const data = await postRepo.list();
 
     setPosts(data);
+
+    setPostList(
+      data.map((post) => ({
+        _id: post.id,
+        value: post.title,
+      })),
+    );
   };
 
   const togglePost = async (id: string) => {
@@ -208,7 +220,7 @@ export const EditReportScreen = () => {
 
         arrivalPhotos: arrivalUrls,
 
-        selectedPostIds: selected,
+        selectedPostIds: selectedPosts,
 
         userId: user.uid,
 
@@ -304,6 +316,46 @@ export const EditReportScreen = () => {
 
           <Card>
             <Card.Content>
+              <Text
+                variant="titleMedium"
+                style={{
+                  marginBottom: 16,
+                }}
+              >
+                Select Posts
+              </Text>
+
+              <PaperSelect
+                label="Select Posts"
+                value={selectedPosts
+                  .map((id) => {
+                    const post = posts.find((x) => x.id === id);
+
+                    return post?.title;
+                  })
+                  .filter(Boolean)
+                  .join(", ")}
+                arrayList={postList.map((item) => ({
+                  ...item,
+                  selected: selectedPosts.includes(item._id),
+                }))}
+                selectedArrayList={postList.filter((item) =>
+                  selectedPosts.includes(item._id),
+                )}
+                multiEnable={true}
+                onSelection={(value: any) => {
+                  setSelectedPosts(
+                    value.selectedArrayList.map((item: any) => item._id),
+                  );
+                }}
+                dialogTitle="Select Posts"
+                textInputMode="outlined"
+              />
+            </Card.Content>
+          </Card>
+
+          {/* <Card>
+            <Card.Content>
               <Text variant="titleMedium">Select Posts</Text>
 
               <Divider
@@ -321,7 +373,7 @@ export const EditReportScreen = () => {
                 />
               ))}
             </Card.Content>
-          </Card>
+          </Card> */}
 
           <Checkbox.Item
             label="Discharged"
