@@ -7,6 +7,8 @@ export interface Report {
 
   isDischarged: boolean;
 
+  selectedPostIds: string[];
+
   visaReports: string[];
 
   costEstimateFiles: string[];

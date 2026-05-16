@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 
 import { ScrollView, View, Image, Alert, TouchableOpacity } from "react-native";
 
+import { AutocompleteDropdown } from "react-native-autocomplete-dropdown";
+
 import {
   TextInput,
   Button,
@@ -23,6 +25,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { auth } from "@/src/core/firebase/firebaseConfig";
 
 import { FirebaseReportRepo } from "../repositories/FirebaseReportRepo";
+import { FirebasePostRepo } from "@/features/posts/repositories/FirebasePostRepo";
 
 const repo = new FirebaseReportRepo();
 
@@ -47,11 +50,36 @@ export const EditReportScreen = () => {
 
   const [arrivalPhotos, setArrivalPhotos] = useState<any[]>([]);
 
+  const [posts, setPosts] = useState<any[]>([]);
+
+  const [selected, setSelected] = useState<string[]>([]);
+
+  const postRepo = new FirebasePostRepo();
+
   useEffect(() => {
     if (editId) {
       loadReport();
+      loadPosts();
     }
   }, [editId]);
+
+  const loadPosts = async () => {
+    const data = await postRepo.list();
+
+    setPosts(data);
+  };
+
+  const togglePost = async (id: string) => {
+    let updated = [...selected];
+
+    if (updated.includes(id)) {
+      updated = updated.filter((x) => x !== id);
+    } else {
+      updated.push(id);
+    }
+
+    setSelected(updated);
+  };
 
   const loadReport = async () => {
     try {
@@ -64,6 +92,8 @@ export const EditReportScreen = () => {
       setPhoneNumber(data.phoneNumber || "");
 
       setIsDischarged(data.isDischarged || false);
+
+      setSelected(data.selectedPostIds || []);
 
       setVisaReports(
         (data.visaReports || []).map((url: string) => ({
@@ -178,6 +208,8 @@ export const EditReportScreen = () => {
 
         arrivalPhotos: arrivalUrls,
 
+        selectedPostIds: selected,
+
         userId: user.uid,
 
         updatedAt: Date.now(),
@@ -269,6 +301,27 @@ export const EditReportScreen = () => {
             keyboardType="phone-pad"
             mode="outlined"
           />
+
+          <Card>
+            <Card.Content>
+              <Text variant="titleMedium">Select Posts</Text>
+
+              <Divider
+                style={{
+                  marginVertical: 14,
+                }}
+              />
+
+              {posts.map((post) => (
+                <Checkbox.Item
+                  key={post.id}
+                  label={post.title}
+                  status={selected.includes(post.id) ? "checked" : "unchecked"}
+                  onPress={() => togglePost(post.id)}
+                />
+              ))}
+            </Card.Content>
+          </Card>
 
           <Checkbox.Item
             label="Discharged"
