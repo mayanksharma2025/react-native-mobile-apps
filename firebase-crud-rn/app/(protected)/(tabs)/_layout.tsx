@@ -37,6 +37,23 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
+        name="reports"
+        options={{
+          title: "Reports",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="document-text" color={color} size={size} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="report/[id]"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
         name="link/[id]"
         options={{
           href: null,
